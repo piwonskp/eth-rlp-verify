@@ -13,10 +13,16 @@ use eras::{
 };
 use rpc_client::fetch_block_header;
 
+/// Main function to verify block headers against their hashes based on block number ranges.
+///
+/// # Arguments
+///
+/// * `rpc_url` - The URL of the Ethereum RPC endpoint.
+/// * `block_number` - The block number in hexadecimal format.
 #[tokio::main]
 async fn main() {
     let rpc_url = "https://mainnet.infura.io/v3/25371764a3e44191b39d3b3b98a8c55d";
-    let block_number = "0xC5D487"; // Replace with the actual block number in hex
+    let block_number = "0xED14F2"; // Replace with the actual block number in hex
 
     let block_number_dec = u64::from_str_radix(&block_number[2..], 16).unwrap();
 

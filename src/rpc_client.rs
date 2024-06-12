@@ -3,6 +3,12 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::error::Error;
 
+/// Fetches the block header from the Ethereum blockchain using the given RPC URL and block number.
+///
+/// # Arguments
+///
+/// * `rpc_url` - The URL of the Ethereum RPC endpoint.
+/// * `block_number` - The block number in hexadecimal format.
 pub async fn fetch_block_header<T: DeserializeOwned>(
     rpc_url: &str,
     block_number: &str,
