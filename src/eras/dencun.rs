@@ -1,12 +1,15 @@
 use crate::block_header::BlockHeader;
+use crate::rpc_client::fetch_block_header;
 use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use serde::Deserialize;
 use std::str::FromStr;
+use tracing::info;
+use tracing::debug;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct RpcBlockHeaderParisToShanghai {
+pub struct RpcBlockHeaderDencun {
     pub parent_hash: String,
     pub sha3_uncles: String,
     pub miner: String,
@@ -23,10 +26,14 @@ pub struct RpcBlockHeaderParisToShanghai {
     pub mix_hash: String,
     pub nonce: String,
     pub base_fee_per_gas: String,
+    pub withdrawals_root: String,
+    pub parent_beacon_block_root: String, // New in Dencun
+    pub blob_gas_used: String, // New in Dencun
+    pub excess_blob_gas: String, // New in Dencun
 }
 
 #[derive(Debug)]
-pub struct BlockHeaderParisToShanghai {
+pub struct BlockHeaderDencun {
     pub parent_hash: H256,
     pub ommers_hash: H256,
     pub beneficiary: H160,
@@ -43,14 +50,18 @@ pub struct BlockHeaderParisToShanghai {
     pub mix_hash: H256,
     pub nonce: [u8; 8],
     pub base_fee_per_gas: U256,
+    pub withdrawals_root: H256,
+    pub parent_beacon_block_root: H256, // New in Dencun
+    pub blob_gas_used: U256, // New in Dencun
+    pub excess_blob_gas: U256, // New in Dencun
 }
 
-impl BlockHeaderParisToShanghai {
-    pub fn from_rpc(rpc_header: RpcBlockHeaderParisToShanghai) -> Self {
+impl BlockHeaderDencun {
+    pub fn from_rpc(rpc_header: RpcBlockHeaderDencun) -> Self {
         let logs_bloom = <Self as BlockHeader>::hex_to_fixed_array::<256>(&rpc_header.logs_bloom);
         let nonce = <Self as BlockHeader>::hex_to_fixed_array::<8>(&rpc_header.nonce);
 
-        BlockHeaderParisToShanghai {
+        BlockHeaderDencun {
             parent_hash: H256::from_str(&rpc_header.parent_hash).unwrap(),
             ommers_hash: H256::from_str(&rpc_header.sha3_uncles).unwrap(),
             beneficiary: H160::from_str(&rpc_header.miner).unwrap(),
@@ -67,13 +78,17 @@ impl BlockHeaderParisToShanghai {
             mix_hash: H256::from_str(&rpc_header.mix_hash).unwrap(),
             nonce,
             base_fee_per_gas: U256::from_str(&rpc_header.base_fee_per_gas).unwrap(),
+            withdrawals_root: H256::from_str(&rpc_header.withdrawals_root).unwrap(),
+            parent_beacon_block_root: H256::from_str(&rpc_header.parent_beacon_block_root).unwrap(),
+            blob_gas_used: U256::from_str(&rpc_header.blob_gas_used).unwrap(),
+            excess_blob_gas: U256::from_str(&rpc_header.excess_blob_gas).unwrap(),
         }
     }
 }
 
-impl BlockHeader for BlockHeaderParisToShanghai {
+impl BlockHeader for BlockHeaderDencun {
     fn rlp_encode(&self) -> Vec<u8> {
-        let mut stream = RlpStream::new_list(16);
+        let mut stream = RlpStream::new_list(20); // 20 fields in Dencun block header
         stream.append(&self.parent_hash);
         stream.append(&self.ommers_hash);
         stream.append(&self.beneficiary);
@@ -90,21 +105,40 @@ impl BlockHeader for BlockHeaderParisToShanghai {
         stream.append(&self.mix_hash);
         stream.append(&self.nonce.as_slice());
         stream.append(&self.base_fee_per_gas);
+        stream.append(&self.withdrawals_root);
+        stream.append(&self.blob_gas_used); // New in Dencun
+        stream.append(&self.excess_blob_gas); // New in Dencun
+        stream.append(&self.parent_beacon_block_root); // New in Dencun
         stream.out().to_vec()
     }
 }
 
-pub fn verify_hash_paris_to_shanghai(
+pub fn verify_hash_dencun(
     block_hash: String,
-    rpc_header: RpcBlockHeaderParisToShanghai,
+    rpc_header: RpcBlockHeaderDencun,
 ) {
-    let header = BlockHeaderParisToShanghai::from_rpc(rpc_header);
+    let header = BlockHeaderDencun::from_rpc(rpc_header);
 
+    // Log the RLP encoded data for debugging purposes
     let rlp_encoded = header.rlp_encode();
-    println!("RLP Encoded: {:?}", rlp_encoded);
-    let computed_block_hash = header.compute_hash();
+    debug!("RLP Encoded: {:?}", rlp_encoded);
 
-    println!("Computed Block Hash: {:?}", computed_block_hash);
+    // Compute the block hash
+    let computed_block_hash = header.compute_hash();
+    info!("Computed Block Hash: {:?}", computed_block_hash);
+
+    // Check if the computed hash matches the given block hash
     let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
-    println!("Is the block hash valid? {}", is_valid);
+    info!("Is the block hash valid? {}", is_valid);
+}
+
+/// Helper function to verify blocks in the Dencun era
+pub async fn verify_dencun(block_number: u64, rpc_url: String) {
+    let block_number_hex = format!("0x{:X}", block_number);
+    info!("Verifying block in the Dencun era");
+    let (block_hash, rpc_header) =
+        fetch_block_header::<RpcBlockHeaderDencun>(&rpc_url, &block_number_hex)
+            .await
+            .unwrap();
+    verify_hash_dencun(block_hash, rpc_header);
 }

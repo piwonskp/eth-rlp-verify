@@ -1,9 +1,58 @@
-mod genesis_to_london;
-mod london_to_paris;
-mod paris_to_shanghai;
-mod shanghai_to_cancun;
+mod genesis;
+mod london;
+mod paris;
+mod shapella;
+mod dencun;
 
-pub use genesis_to_london::{verify_hash_genesis_to_london, RpcBlockHeaderGenesisToLondon};
-pub use london_to_paris::{verify_hash_london_to_paris, RpcBlockHeaderLondonToParis};
-pub use paris_to_shanghai::{verify_hash_paris_to_shanghai, RpcBlockHeaderParisToShanghai};
-pub use shanghai_to_cancun::{verify_hash_shanghai_to_cancun, RpcBlockHeaderShanghaiToCancun};
+use crate::constants::{
+    LONDON_START, LONDON_END, PARIS_START, PARIS_END, SHAPELLA_START, SHAPELLA_END, DENCUN_START, GENESIS_END,
+};
+use std::future::Future;
+use tokio::task::JoinHandle;
+use std::pin::Pin;
+
+// Re-export each era's structs and verification functions
+pub use genesis::verify_genesis;
+pub use london::verify_london;
+pub use paris::verify_paris;
+pub use shapella::verify_shapella;
+pub use dencun::verify_dencun;
+
+/// Helper function to spawn the verification future in a `tokio::spawn` call
+fn spawn_era_verification<F>(
+    block_number: u64,
+    rpc_url: String,  // Now takes ownership of rpc_url as String
+    f: F,
+) -> JoinHandle<()>
+where
+    F: FnOnce(u64, String) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send + 'static,
+{
+    tokio::spawn(f(block_number, rpc_url))  // Pass the owned rpc_url
+}
+
+/// Determine the era based on the block number and return the appropriate function for verification
+pub fn determine_era(block_number: u64, rpc_url: String) -> Option<JoinHandle<()>> { // Changed to pass rpc_url as an owned String
+    if (LONDON_START..=LONDON_END).contains(&block_number) {
+        Some(spawn_era_verification(block_number, rpc_url.clone(), move |block_number, rpc_url| {
+            Box::pin(verify_london(block_number, rpc_url)) as Pin<Box<dyn Future<Output = ()> + Send>> // Pass &rpc_url as &str
+        }))
+    } else if (PARIS_START..=PARIS_END).contains(&block_number) {
+        Some(spawn_era_verification(block_number, rpc_url.clone(), move |block_number, rpc_url| {
+            Box::pin(verify_paris(block_number, rpc_url)) as Pin<Box<dyn Future<Output = ()> + Send>> // Pass &rpc_url as &str
+        }))
+    } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
+        Some(spawn_era_verification(block_number, rpc_url.clone(), move |block_number, rpc_url| {
+            Box::pin(verify_shapella(block_number, rpc_url)) as Pin<Box<dyn Future<Output = ()> + Send>> // Pass &rpc_url as &str
+        }))
+    } else if block_number >= DENCUN_START {
+        Some(spawn_era_verification(block_number, rpc_url.clone(), move |block_number, rpc_url| {
+            Box::pin(verify_dencun(block_number, rpc_url)) as Pin<Box<dyn Future<Output = ()> + Send>> // Pass &rpc_url as &str
+        }))
+    } else if block_number <= GENESIS_END {
+        Some(spawn_era_verification(block_number, rpc_url.clone(), move |block_number, rpc_url| {
+            Box::pin(verify_genesis(block_number, rpc_url)) as Pin<Box<dyn Future<Output = ()> + Send>> // Pass &rpc_url as &str
+        }))
+    } else {
+        None
+    }
+}

@@ -1,12 +1,15 @@
 use crate::block_header::BlockHeader;
+use crate::rpc_client::fetch_block_header;
 use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use serde::Deserialize;
 use std::str::FromStr;
+use tracing::info;
+use tracing::debug;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct RpcBlockHeaderGenesisToLondon {
+pub struct RpcBlockHeaderShapella {
     pub parent_hash: String,
     pub sha3_uncles: String,
     pub miner: String,
@@ -22,10 +25,12 @@ pub struct RpcBlockHeaderGenesisToLondon {
     pub extra_data: String,
     pub mix_hash: String,
     pub nonce: String,
+    pub base_fee_per_gas: String,
+    pub withdrawals_root: String,
 }
 
 #[derive(Debug)]
-pub struct BlockHeaderGenesisToLondon {
+pub struct BlockHeaderShapella {
     pub parent_hash: H256,
     pub ommers_hash: H256,
     pub beneficiary: H160,
@@ -41,14 +46,16 @@ pub struct BlockHeaderGenesisToLondon {
     pub extra_data: Vec<u8>,
     pub mix_hash: H256,
     pub nonce: [u8; 8],
+    pub base_fee_per_gas: U256,
+    pub withdrawals_root: H256,
 }
 
-impl BlockHeaderGenesisToLondon {
-    pub fn from_rpc(rpc_header: RpcBlockHeaderGenesisToLondon) -> Self {
+impl BlockHeaderShapella {
+    pub fn from_rpc(rpc_header: RpcBlockHeaderShapella) -> Self {
         let logs_bloom = <Self as BlockHeader>::hex_to_fixed_array::<256>(&rpc_header.logs_bloom);
         let nonce = <Self as BlockHeader>::hex_to_fixed_array::<8>(&rpc_header.nonce);
 
-        BlockHeaderGenesisToLondon {
+        BlockHeaderShapella {
             parent_hash: H256::from_str(&rpc_header.parent_hash).unwrap(),
             ommers_hash: H256::from_str(&rpc_header.sha3_uncles).unwrap(),
             beneficiary: H160::from_str(&rpc_header.miner).unwrap(),
@@ -64,13 +71,15 @@ impl BlockHeaderGenesisToLondon {
             extra_data: hex::decode(&rpc_header.extra_data[2..]).unwrap_or_default(),
             mix_hash: H256::from_str(&rpc_header.mix_hash).unwrap(),
             nonce,
+            base_fee_per_gas: U256::from_str(&rpc_header.base_fee_per_gas).unwrap(),
+            withdrawals_root: H256::from_str(&rpc_header.withdrawals_root).unwrap(),
         }
     }
 }
 
-impl BlockHeader for BlockHeaderGenesisToLondon {
+impl BlockHeader for BlockHeaderShapella {
     fn rlp_encode(&self) -> Vec<u8> {
-        let mut stream = RlpStream::new_list(15);
+        let mut stream = RlpStream::new_list(17);
         stream.append(&self.parent_hash);
         stream.append(&self.ommers_hash);
         stream.append(&self.beneficiary);
@@ -86,21 +95,32 @@ impl BlockHeader for BlockHeaderGenesisToLondon {
         stream.append(&self.extra_data);
         stream.append(&self.mix_hash);
         stream.append(&self.nonce.as_slice());
+        stream.append(&self.base_fee_per_gas);
+        stream.append(&self.withdrawals_root);
         stream.out().to_vec()
     }
 }
 
-pub fn verify_hash_genesis_to_london(
-    block_hash: String,
-    rpc_header: RpcBlockHeaderGenesisToLondon,
-) {
-    let header = BlockHeaderGenesisToLondon::from_rpc(rpc_header);
+pub fn verify_hash_shanghai_to_cancun(block_hash: String, rpc_header: RpcBlockHeaderShapella) {
+    let header = BlockHeaderShapella::from_rpc(rpc_header);
 
     let rlp_encoded = header.rlp_encode();
-    println!("RLP Encoded: {:?}", rlp_encoded);
-    let computed_block_hash = header.compute_hash();
+    debug!("RLP Encoded: {:?}", rlp_encoded);
 
-    println!("Computed Block Hash: {:?}", computed_block_hash);
+    let computed_block_hash = header.compute_hash();
+    info!("Computed Block Hash: {:?}", computed_block_hash);
+
     let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
-    println!("Is the block hash valid? {}", is_valid);
+    info!("Is the block hash valid? {}", is_valid);
+}
+
+/// Helper function to verify blocks in the Shanghai to Cancun (Shapella) era
+pub async fn verify_shapella(block_number: u64, rpc_url: String) {
+    let block_number_hex = format!("0x{:X}", block_number);
+    info!("Verifying block in the Shanghai to Cancun (Shapella) era");
+    let (block_hash, rpc_header) =
+        fetch_block_header::<RpcBlockHeaderShapella>(&rpc_url, &block_number_hex)
+            .await
+            .unwrap();
+    verify_hash_shanghai_to_cancun(block_hash, rpc_header);
 }
