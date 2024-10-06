@@ -4,8 +4,8 @@ use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use serde::Deserialize;
 use std::str::FromStr;
-use tracing::info;
 use tracing::debug;
+use tracing::info;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

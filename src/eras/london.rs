@@ -4,8 +4,8 @@ use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use serde::Deserialize;
 use std::str::FromStr;
-use tracing::info;
 use tracing::debug;
+use tracing::info;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -119,4 +119,3 @@ pub async fn verify_london(block_number: u64, rpc_url: String) {
             .unwrap();
     verify_hash_london_to_paris(block_hash, rpc_header);
 }
-

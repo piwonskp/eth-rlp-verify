@@ -4,8 +4,8 @@ use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use serde::Deserialize;
 use std::str::FromStr;
-use tracing::info;
 use tracing::debug;
+use tracing::info;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -28,8 +28,8 @@ pub struct RpcBlockHeaderDencun {
     pub base_fee_per_gas: String,
     pub withdrawals_root: String,
     pub parent_beacon_block_root: String, // New in Dencun
-    pub blob_gas_used: String, // New in Dencun
-    pub excess_blob_gas: String, // New in Dencun
+    pub blob_gas_used: String,            // New in Dencun
+    pub excess_blob_gas: String,          // New in Dencun
 }
 
 #[derive(Debug)]
@@ -52,8 +52,8 @@ pub struct BlockHeaderDencun {
     pub base_fee_per_gas: U256,
     pub withdrawals_root: H256,
     pub parent_beacon_block_root: H256, // New in Dencun
-    pub blob_gas_used: U256, // New in Dencun
-    pub excess_blob_gas: U256, // New in Dencun
+    pub blob_gas_used: U256,            // New in Dencun
+    pub excess_blob_gas: U256,          // New in Dencun
 }
 
 impl BlockHeaderDencun {
@@ -113,10 +113,7 @@ impl BlockHeader for BlockHeaderDencun {
     }
 }
 
-pub fn verify_hash_dencun(
-    block_hash: String,
-    rpc_header: RpcBlockHeaderDencun,
-) {
+pub fn verify_hash_dencun(block_hash: String, rpc_header: RpcBlockHeaderDencun) {
     let header = BlockHeaderDencun::from_rpc(rpc_header);
 
     // Log the RLP encoded data for debugging purposes

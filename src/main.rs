@@ -4,15 +4,18 @@ mod eras;
 mod rpc_client;
 
 use clap::Parser;
+use dotenv::dotenv;
+use eras::determine_era;
+use std::env;
+use tokio::task::JoinError;
 use tracing::info;
 use tracing_subscriber;
-use dotenv::dotenv;
-use std::env;
-use eras::determine_era;
-use tokio::task::JoinError;
 
 #[derive(Parser, Debug)]
-#[command(name = "Block Header Verifier", about = "Verify Ethereum block headers against their hashes.")]
+#[command(
+    name = "Block Header Verifier",
+    about = "Verify Ethereum block headers against their hashes."
+)]
 struct Cli {
     #[arg(long, value_parser = clap::value_parser!(u64))]
     block: u64,
@@ -26,8 +29,7 @@ async fn main() -> Result<(), JoinError> {
     // Initialize the tracing subscriber for logging
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".into()) // Default to "info" level if RUST_LOG is not set
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()), // Default to "info" level if RUST_LOG is not set
         )
         .init();
 
@@ -43,6 +45,6 @@ async fn main() -> Result<(), JoinError> {
         None => {
             info!("Block number is out of the supported range.");
             Ok(()) // Return an empty success here to match types
-        },
+        }
     }
 }
