@@ -1,7 +1,7 @@
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::error::Error;
+use std::{error::Error, fmt::Debug};
 
 /// Fetches the block header from the Ethereum blockchain using the given RPC URL and block number.
 ///
@@ -9,7 +9,7 @@ use std::error::Error;
 ///
 /// * `rpc_url` - The URL of the Ethereum RPC endpoint.
 /// * `block_number` - The block number in hexadecimal format.
-pub async fn fetch_block_header<T: DeserializeOwned>(
+pub async fn fetch_block_header<T: DeserializeOwned + Debug>(
     rpc_url: &str,
     block_number: &str,
 ) -> Result<(String, T), Box<dyn Error>> {
@@ -32,5 +32,6 @@ pub async fn fetch_block_header<T: DeserializeOwned>(
         .ok_or("Missing block hash")?
         .to_string();
     let rpc_header: T = serde_json::from_value(response["result"].clone())?;
+    println!("RPC HEADER: {:#?}", rpc_header);
     Ok((block_hash, rpc_header))
 }
