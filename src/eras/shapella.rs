@@ -2,7 +2,8 @@ use crate::block_header::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait
 use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use std::str::FromStr;
-use tracing::{debug, info};
+use tracing::debug;
+use tracing::info;
 
 #[derive(Debug)]
 pub struct BlockHeaderShapella {

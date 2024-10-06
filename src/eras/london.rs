@@ -2,7 +2,8 @@ use crate::block_header::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait
 use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use std::str::FromStr;
-use tracing::{debug, info};
+use tracing::debug;
+use tracing::info;
 
 #[derive(Debug)]
 pub struct BlockHeaderLondon {
@@ -95,4 +96,14 @@ pub fn verify_hash_london_to_paris(block_hash: String, db_header: VerifiableBloc
     let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
     info!("Is the block hash valid? {}", is_valid);
     is_valid
+}
+
+pub async fn verify_london(block_number: u64, rpc_url: String) {
+    let block_number_hex = format!("0x{:X}", block_number);
+    info!("Verifying block in the London to Paris era");
+    let (block_hash, rpc_header) =
+        fetch_block_header::<RpcBlockHeaderLondon>(&rpc_url, &block_number_hex)
+            .await
+            .unwrap();
+    verify_hash_london_to_paris(block_hash, rpc_header);
 }
