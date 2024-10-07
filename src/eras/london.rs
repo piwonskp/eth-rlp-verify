@@ -99,6 +99,7 @@ impl BlockHeader for BlockHeaderLondon {
 
 pub fn verify_hash_london_to_paris(block_hash: String, rpc_header: RpcBlockHeaderLondon) {
     let header = BlockHeaderLondon::from_rpc(rpc_header);
+    println!("header: {:?}", header);
 
     let rlp_encoded = header.rlp_encode();
     debug!("RLP Encoded: {:?}", rlp_encoded);
