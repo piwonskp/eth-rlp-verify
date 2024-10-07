@@ -113,7 +113,7 @@ pub fn verify_hash_paris_to_shanghai(block_hash: String, rpc_header: RpcBlockHea
 /// Helper function to verify blocks in the Paris to Shanghai era
 pub async fn verify_paris(block_number: u64, rpc_url: String) {
     let block_number_hex = format!("0x{:X}", block_number);
-    info!("Verifying block in the Paris to Shanghai era");
+    info!("Verifying block in the Paris era");
     let (block_hash, rpc_header) =
         fetch_block_header::<RpcBlockHeaderParis>(&rpc_url, &block_number_hex)
             .await
