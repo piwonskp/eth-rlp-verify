@@ -34,6 +34,9 @@ fn main() {
         mix_hash: Some(
             "0x234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef".to_string(),
         ),
+        ommers_hash: Some(
+            "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347".to_string(),
+        ),
         withdrawals_root: Some(
             "0x12dea25053022267a1b6b7be2a3ac8772fc20e75494d12b7942cfb3363a2f66a".to_string(),
         ),
