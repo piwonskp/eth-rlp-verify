@@ -1,0 +1,37 @@
+RpcBlockHeaderParis:
+parent_hash: "0x56a9bb0302da44b8c0b3df540781424684c3af04d0b7a38d72842b762076a664", 
+sha3_uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347", 
+miner: "0x0b3b161b8abeb6b04cb95c3e6047f80c120a0292", 
+state_root: "0x2ca38a39c5517f658d107c19550334a9820a7393d14857f2c0e0458292668d64", 
+transactions_root: "0x5c56184fbce74e9c98d2a51aa2110963396047d84e8ce1ae1785337255cd11e0", 
+receipts_root: "0x1707e457973ce280debe93f5d478663d97ad192beea1f2fc65f391db80226e5e", 
+logs_bloom: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 
+difficulty: "0x0", 
+number: "0xed14f3", 
+gas_limit: "0x1c9c380", 
+gas_used: "0x1c97d83", 
+timestamp: "0x6322c97f", 
+extra_data: "0x", 
+mix_hash: "0xfd7be062e87b2193dff12ca89e90bbf61684e6676df4e86cca6730237863dd23", 
+nonce: "0x0000000000000000", 
+base_fee_per_gas: "0xcc8ac8283" 
+
+
+
+BlockHeaderParis:
+parent_hash: 0x56a9bb0302da44b8c0b3df540781424684c3af04d0b7a38d72842b762076a664, 
+ommers_hash: 0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347, 
+beneficiary: 0x0b3b161b8abeb6b04cb95c3e6047f80c120a0292, 
+state_root: 0x2ca38a39c5517f658d107c19550334a9820a7393d14857f2c0e0458292668d64, 
+transactions_root: 0x5c56184fbce74e9c98d2a51aa2110963396047d84e8ce1ae1785337255cd11e0, 
+receipts_root: 0x1707e457973ce280debe93f5d478663d97ad192beea1f2fc65f391db80226e5e, 
+logs_bloom: [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255], 
+difficulty: 0, 
+number: 15537395, 
+gas_limit: 30000000, 
+gas_used: 29982083, 
+timestamp: 1663224191, 
+extra_data: [], 
+mix_hash: 0xfd7be062e87b2193dff12ca89e90bbf61684e6676df4e86cca6730237863dd23, 
+nonce: [0, 0, 0, 0, 0, 0, 0, 0], 
+base_fee_per_gas: 54906356355 
