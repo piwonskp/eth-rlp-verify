@@ -3,28 +3,28 @@ use sha3::{Digest, Keccak256};
 
 #[derive(Debug)]
 pub struct BlockHeader {
-    pub block_hash: String,                       // character(66) NOT NULL
-    pub number: i64,                              // bigint NOT NULL
-    pub gas_limit: i64,                           // bigint NOT NULL
-    pub gas_used: i64,                            // bigint NOT NULL
-    pub nonce: String,                            // character varying(78) NOT NULL
-    pub transaction_root: Option<String>,         // character(66)
-    pub receipts_root: Option<String>,            // character(66)
-    pub state_root: Option<String>,               // character(66)
-    pub base_fee_per_gas: Option<String>,         // character varying(78)
-    pub parent_hash: Option<String>, 
-    pub ommers_hash: Option<String>,             // character varying(66)
-    pub miner: Option<String>,                    // character varying(42)
-    pub logs_bloom: Option<String>,               // character varying(1024)
-    pub difficulty: Option<String>,               // character varying(78)
-    pub total_difficulty: Option<String>,         // character varying(78)
-    pub sha3_uncles: Option<String>,              // character varying(66)
-    pub timestamp: Option<String>,                // character varying(100)
-    pub extra_data: Option<String>,               // character varying(1024)
-    pub mix_hash: Option<String>,                 // character varying(66)
-    pub withdrawals_root: Option<String>,         // character varying(66)
-    pub blob_gas_used: Option<String>,            // character varying(78)
-    pub excess_blob_gas: Option<String>,          // character varying(78)
+    pub block_hash: String,               // character(66) NOT NULL
+    pub number: i64,                      // bigint NOT NULL
+    pub gas_limit: i64,                   // bigint NOT NULL
+    pub gas_used: i64,                    // bigint NOT NULL
+    pub nonce: String,                    // character varying(78) NOT NULL
+    pub transaction_root: Option<String>, // character(66)
+    pub receipts_root: Option<String>,    // character(66)
+    pub state_root: Option<String>,       // character(66)
+    pub base_fee_per_gas: Option<String>, // character varying(78)
+    pub parent_hash: Option<String>,
+    pub ommers_hash: Option<String>,      // character varying(66)
+    pub miner: Option<String>,            // character varying(42)
+    pub logs_bloom: Option<String>,       // character varying(1024)
+    pub difficulty: Option<String>,       // character varying(78)
+    pub total_difficulty: Option<String>, // character varying(78)
+    pub sha3_uncles: Option<String>,      // character varying(66)
+    pub timestamp: Option<String>,        // character varying(100)
+    pub extra_data: Option<String>,       // character varying(1024)
+    pub mix_hash: Option<String>,         // character varying(66)
+    pub withdrawals_root: Option<String>, // character varying(66)
+    pub blob_gas_used: Option<String>,    // character varying(78)
+    pub excess_blob_gas: Option<String>,  // character varying(78)
     pub parent_beacon_block_root: Option<String>, // character varying(66)
 }
 

@@ -85,10 +85,7 @@ impl BlockHeaderTrait for BlockHeaderShapella {
 }
 
 // Verification logic
-pub fn verify_hash_shapella(
-    block_hash: String,
-    db_header: VerifiableBlockHeader,
-) -> bool {
+pub fn verify_hash_shapella(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderShapella::from_db_header(db_header);
 
     // Log the RLP encoded data for debugging purposes
