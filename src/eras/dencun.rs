@@ -5,31 +5,6 @@ use std::str::FromStr;
 use tracing::debug;
 use tracing::info;
 
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct RpcBlockHeaderDencun {
-    pub parent_hash: String,
-    pub sha3_uncles: String,
-    pub miner: String,
-    pub state_root: String,
-    pub transactions_root: String,
-    pub receipts_root: String,
-    pub logs_bloom: String,
-    pub difficulty: String,
-    pub number: String,
-    pub gas_limit: String,
-    pub gas_used: String,
-    pub timestamp: String,
-    pub extra_data: String,
-    pub mix_hash: String,
-    pub nonce: String,
-    pub base_fee_per_gas: String,
-    pub withdrawals_root: String,
-    pub parent_beacon_block_root: String, // New in Dencun
-    pub blob_gas_used: String,            // New in Dencun
-    pub excess_blob_gas: String,          // New in Dencun
-}
-
 #[derive(Debug)]
 pub struct BlockHeaderDencun {
     pub parent_hash: H256,
@@ -122,8 +97,8 @@ impl BlockHeaderTrait for BlockHeaderDencun {
     }
 }
 
-pub fn verify_hash_dencun(block_hash: String, rpc_header: RpcBlockHeaderDencun) {
-    let header = BlockHeaderDencun::from_rpc(rpc_header);
+pub fn verify_hash_dencun(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
+    let header = BlockHeaderDencun::from_db_header(db_header);
 
     // Log the RLP encoded data for debugging purposes
     let rlp_encoded = header.rlp_encode();

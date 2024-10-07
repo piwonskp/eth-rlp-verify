@@ -85,7 +85,7 @@ impl BlockHeaderTrait for BlockHeaderShapella {
 }
 
 // Verification logic
-pub fn verify_hash_shanghai_to_cancun(
+pub fn verify_hash_shapella(
     block_hash: String,
     db_header: VerifiableBlockHeader,
 ) -> bool {

@@ -77,7 +77,7 @@ impl BlockHeaderTrait for BlockHeaderGenesis {
 }
 
 // Verification logic
-pub fn verify_hash_genesis_to_london(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
+pub fn verify_hash_genesis(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderGenesis::from_db_header(db_header);
 
     // Log the RLP encoded data for debugging purposes
@@ -91,5 +91,6 @@ pub fn verify_hash_genesis_to_london(block_hash: String, db_header: VerifiableBl
     // Check if the computed hash matches the given block hash
     let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
     info!("Is the block hash valid? {}", is_valid);
+
     is_valid
 }

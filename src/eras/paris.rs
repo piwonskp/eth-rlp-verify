@@ -81,7 +81,7 @@ impl BlockHeaderTrait for BlockHeaderParis {
 }
 
 // Verification logic
-pub fn verify_hash_paris_to_shanghai(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
+pub fn verify_hash_paris(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderParis::from_db_header(db_header);
 
     // Log the RLP encoded data for debugging purposes
