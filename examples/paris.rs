@@ -43,7 +43,7 @@ fn main() {
         parent_beacon_block_root: None,
     };
 
-    let block_hash = "0xa49fa930183f0fa8ca46244e946a635637b90c374d845e9c68dd7fd66cb6e051";
+    let block_hash = "0xe37e1a183a3d1c7234d090bfb7196081635919c26f2e65c67c106513158a7db4";
 
     let is_valid = verify_block(15537401, block_header, block_hash);
     println!("Paris era block verification result: {}", is_valid);
