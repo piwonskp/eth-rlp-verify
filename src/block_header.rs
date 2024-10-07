@@ -12,7 +12,8 @@ pub struct BlockHeader {
     pub receipts_root: Option<String>,            // character(66)
     pub state_root: Option<String>,               // character(66)
     pub base_fee_per_gas: Option<String>,         // character varying(78)
-    pub parent_hash: Option<String>,              // character varying(66)
+    pub parent_hash: Option<String>, 
+    pub ommers_hash: Option<String>,             // character varying(66)
     pub miner: Option<String>,                    // character varying(42)
     pub logs_bloom: Option<String>,               // character varying(1024)
     pub difficulty: Option<String>,               // character varying(78)
