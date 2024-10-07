@@ -82,8 +82,9 @@ impl BlockHeaderTrait for BlockHeaderLondon {
 
 // Verification logic
 pub fn verify_hash_london(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
+    // println!("db_header: {:?}", db_header);
     let header = BlockHeaderLondon::from_db_header(db_header);
-    println!("{:?}", header);
+    println!("header: {:?}", header);
 
     // Log the RLP encoded data for debugging purposes
     let rlp_encoded = header.rlp_encode();
