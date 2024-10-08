@@ -5,6 +5,31 @@ use std::str::FromStr;
 use tracing::debug;
 use tracing::info;
 
+/// Represents an Ethereum block header for the Paris upgrade.
+///
+/// The Paris upgrade marks Ethereum's transition from proof-of-work (PoW) to proof-of-stake (PoS),
+/// and this struct stores key properties of a block header during that period. It contains fields
+/// that describe various cryptographic roots, gas limits, and mining information required to verify
+/// and authenticate the block.
+///
+/// # Fields
+///
+/// - `parent_hash`: The hash of the parent block, which links this block to the previous one.
+/// - `ommers_hash`: The hash of ommer (uncle) blocks included in this block.
+/// - `beneficiary`: The Ethereum address of the miner or validator who produced this block.
+/// - `state_root`: The root hash of the state trie after this block is processed.
+/// - `transactions_root`: The root hash of the Merkle tree of transactions in this block.
+/// - `receipts_root`: The root hash of the Merkle tree of transaction receipts for this block.
+/// - `logs_bloom`: A bloom filter used for fast log searching, filtering relevant logs efficiently.
+/// - `difficulty`: The difficulty value that was required to mine the block in proof-of-work.
+/// - `number`: The block number, indicating its position in the blockchain.
+/// - `gas_limit`: The maximum gas allowed to be consumed by transactions in this block.
+/// - `gas_used`: The total amount of gas used by the transactions in the block.
+/// - `timestamp`: The timestamp indicating when the block was mined.
+/// - `extra_data`: Extra data associated with the block, typically set by the miner, up to 32 bytes.
+/// - `mix_hash`: A hash used to verify the proof-of-work (PoW) mining result.
+/// - `nonce`: The 64-bit nonce used to verify the PoW and mine the block.
+/// - `base_fee_per_gas`: The minimum gas fee for transactions in this block, as defined in EIP-1559.
 #[derive(Debug)]
 pub struct BlockHeaderParis {
     pub parent_hash: H256,
@@ -26,6 +51,18 @@ pub struct BlockHeaderParis {
 }
 
 impl BlockHeaderParis {
+    /// Converts a `VerifiableBlockHeader` fetched from the database into a `BlockHeaderParis`.
+    ///
+    /// This function transforms a `VerifiableBlockHeader` into a `BlockHeaderParis` structure,
+    /// parsing necessary fields such as the state root, transactions root, and miner's address.
+    ///
+    /// # Arguments
+    ///
+    /// - `db_header`: A `VerifiableBlockHeader` fetched from the database, containing the raw data.
+    ///
+    /// # Returns
+    ///
+    /// A `BlockHeaderParis` instance with parsed and populated fields.
     pub fn from_db_header(db_header: VerifiableBlockHeader) -> Self {
         let logs_bloom = <Self as BlockHeaderTrait>::hex_to_fixed_array::<256>(
             &db_header.logs_bloom.unwrap_or_default(),
@@ -56,8 +93,20 @@ impl BlockHeaderParis {
     }
 }
 
-// Implement the RLP encoding
+/// Implements the `BlockHeaderTrait` for `BlockHeaderParis`.
+///
+/// This trait implementation enables RLP encoding for the Paris block header, which is essential
+/// for compact and efficient serialization. It ensures that the Paris block header can be serialized
+/// and verified using Ethereum's standard methods.
 impl BlockHeaderTrait for BlockHeaderParis {
+    /// RLP encodes the Paris block header, producing a vector of bytes.
+    ///
+    /// This function encodes all 16 fields of the Paris block header in compliance with
+    /// Ethereum's RLP encoding scheme, which is used for serialization and block verification.
+    ///
+    /// # Returns
+    ///
+    /// A `Vec<u8>` containing the RLP-encoded block header data.
     fn rlp_encode(&self) -> Vec<u8> {
         let mut stream = RlpStream::new_list(16); // 16 fields in Paris block header
         stream.append(&self.parent_hash);
@@ -80,7 +129,31 @@ impl BlockHeaderTrait for BlockHeaderParis {
     }
 }
 
-// Verification logic
+/// Verifies the integrity of a Paris block hash by comparing it with the computed hash.
+///
+/// This function uses the provided block hash and the database block header to create a `BlockHeaderParis`,
+/// then computes the block hash by RLP encoding the header and applying the Keccak256 hashing algorithm.
+/// The computed hash is compared to the provided `block_hash` to check if the block is valid.
+///
+/// # Arguments
+///
+/// - `block_hash`: The expected hash of the block (as a hexadecimal string).
+/// - `db_header`: A `VerifiableBlockHeader` containing block header information from the database.
+///
+/// # Returns
+///
+/// A boolean indicating whether the computed block hash matches the provided hash.
+///
+/// # Example
+///
+/// ```rust
+/// let is_valid = verify_hash_paris("0xabc...".to_string(), db_header);
+/// if is_valid {
+///     println!("The block hash is valid!");
+/// } else {
+///     println!("Invalid block hash.");
+/// }
+/// ```
 pub fn verify_hash_paris(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderParis::from_db_header(db_header);
 

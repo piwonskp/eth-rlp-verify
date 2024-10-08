@@ -5,6 +5,30 @@ use std::str::FromStr;
 use tracing::debug;
 use tracing::info;
 
+/// Represents an Ethereum block header for the Genesis era.
+///
+/// The Genesis era refers to the early blocks in the Ethereum blockchain, starting from the Genesis block
+/// and continuing through the initial blocks before major upgrades. This struct contains the fields necessary
+/// for verifying blocks from the Genesis era, including cryptographic data, gas usage, and other metadata
+/// required to validate and authenticate these early blocks.
+///
+/// # Fields
+///
+/// - `parent_hash`: The hash of the parent block that links this block to the blockchain.
+/// - `ommers_hash`: The hash of the ommers (uncle) blocks included in this block.
+/// - `beneficiary`: The Ethereum address of the miner who produced this block.
+/// - `state_root`: The root of the state trie after the block has been processed.
+/// - `transactions_root`: The Merkle root of the transactions included in the block.
+/// - `receipts_root`: The Merkle root of the receipts for transactions included in the block.
+/// - `logs_bloom`: A 256-byte bloom filter for fast searching and filtering of logs.
+/// - `difficulty`: The difficulty level required to mine the block in the proof-of-work algorithm.
+/// - `number`: The block number, which indicates its position in the blockchain.
+/// - `gas_limit`: The maximum amount of gas that transactions within the block can consume.
+/// - `gas_used`: The actual gas consumed by the transactions in this block.
+/// - `timestamp`: The time at which the block was mined.
+/// - `extra_data`: Additional data added by the miner, up to 32 bytes.
+/// - `mix_hash`: A proof-of-work hash used to verify the mining process.
+/// - `nonce`: A 64-bit proof-of-work nonce used to verify the mining result.
 #[derive(Debug)]
 pub struct BlockHeaderGenesis {
     pub parent_hash: H256,
@@ -25,6 +49,18 @@ pub struct BlockHeaderGenesis {
 }
 
 impl BlockHeaderGenesis {
+    /// Converts a `VerifiableBlockHeader` fetched from the database into a `BlockHeaderGenesis`.
+    ///
+    /// This method takes a database block header and converts it into the appropriate `BlockHeaderGenesis` structure
+    /// by parsing and populating all necessary fields such as `parent_hash`, `ommers_hash`, and `logs_bloom`.
+    ///
+    /// # Arguments
+    ///
+    /// - `db_header`: A `VerifiableBlockHeader` fetched from the database, containing various fields in string format.
+    ///
+    /// # Returns
+    ///
+    /// A `BlockHeaderGenesis` instance containing the parsed and validated block header data.
     pub fn from_db_header(db_header: VerifiableBlockHeader) -> Self {
         let logs_bloom = <Self as BlockHeaderTrait>::hex_to_fixed_array::<256>(
             &db_header.logs_bloom.unwrap_or_default(),
@@ -53,8 +89,27 @@ impl BlockHeaderGenesis {
     }
 }
 
-// Implement the RLP encoding
+/// Implements the `BlockHeaderTrait` for `BlockHeaderGenesis`.
+///
+/// This implementation provides RLP encoding for the Genesis block header, which is critical for compact
+/// storage and transmission of the block header in Ethereum. The RLP encoding is also used during the process
+/// of verifying the block header by computing its hash.
+///
+/// # Example
+///
+/// ```rust
+/// let header = BlockHeaderGenesis::from_db_header(db_header);
+/// let encoded_header = header.rlp_encode();
+/// ```
 impl BlockHeaderTrait for BlockHeaderGenesis {
+    /// RLP encodes the Genesis block header, returning a vector of bytes.
+    ///
+    /// This function encodes all 15 fields of the Genesis block header using Ethereum's RLP (Recursive Length Prefix) format,
+    /// which is essential for serialization, verification, and block consistency checks.
+    ///
+    /// # Returns
+    ///
+    /// A `Vec<u8>` containing the RLP-encoded block header data.
     fn rlp_encode(&self) -> Vec<u8> {
         let mut stream = RlpStream::new_list(15); // 15 fields in Genesis block header
         stream.append(&self.parent_hash);
@@ -76,7 +131,31 @@ impl BlockHeaderTrait for BlockHeaderGenesis {
     }
 }
 
-// Verification logic
+/// Verifies the hash of a Genesis era block by comparing the computed hash to the provided hash.
+///
+/// This function verifies the integrity of a block from the Genesis era by taking a block header from
+/// the database, converting it to a `BlockHeaderGenesis`, and encoding it using RLP. The computed hash
+/// is then compared to the provided block hash to ensure correctness.
+///
+/// # Arguments
+///
+/// - `block_hash`: The expected hash of the block as a hexadecimal string.
+/// - `db_header`: A `VerifiableBlockHeader` fetched from the database, containing the raw block header data.
+///
+/// # Returns
+///
+/// A boolean value indicating whether the computed block hash matches the provided block hash.
+///
+/// # Example
+///
+/// ```rust
+/// let is_valid = verify_hash_genesis("0xabc...".to_string(), db_header);
+/// if is_valid {
+///     println!("Block hash is valid!");
+/// } else {
+///     println!("Invalid block hash.");
+/// }
+/// ```
 pub fn verify_hash_genesis(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderGenesis::from_db_header(db_header);
 
