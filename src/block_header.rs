@@ -138,9 +138,4 @@ pub trait BlockHeaderTrait {
         array.copy_from_slice(&bytes);
         array
     }
-
-    // Helper function to parse hex to i64
-    fn parse_hex_to_i64(hex_str: &str) -> Option<i64> {
-        i64::from_str_radix(hex_str.trim_start_matches("0x"), 16).ok()
-    }
 }
