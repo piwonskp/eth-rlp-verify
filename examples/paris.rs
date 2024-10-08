@@ -25,7 +25,7 @@ fn main() {
         miner: Some("0x0b3b161b8abeb6b04cb95c3e6047f80c120a0292".to_string()),
         logs_bloom: Some("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".to_string()),
         difficulty: Some("0x0".to_string()),
-        total_difficulty: Some("0xc8fb2...".to_string()),
+        totaldifficulty: Some("0xc8fb2...".to_string()),
         sha3_uncles: Some(
             "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347".to_string(),
         ),

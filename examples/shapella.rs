@@ -25,7 +25,7 @@ fn main() {
         miner: Some("0x0b70b578abd96aab5e80d24d1f3c28dbde14356a".to_string()),
         logs_bloom: Some("0x9479b5dce9a45ebc5af9eee4f1a9cb73dfb3437b2b7edff2a5f36addcfa4319e74212ff4d469c756dfddbeb6db79d5ab5effee57ac57fdfdbbe30a1fd8ffa9fdb9ddfb19771ffdbd7eff4bdbd3d5f97fdf571edeeafefe5a6eb55eceffd739b27ffcff7f16a38dbff45ddd25fb9d7b9bef9bae37e0bb6f7dfbf5fbf3cdfd5dbdbe57ffdfe7ef77ddb7fef267af53587bfb7ffcb3f9f673fc7eababe5fbfe77eddff945e347a6fffdfbfbe8fd7ffee79efcfcce5d77a66db3f9fabe9f3b8b1d79f9a99bb7af11f93f6f9b736f2cbf5697d57f4b6de478bdfef6759dfbbe5bebee7cfff7e9df8acdd46f9777fb47edfaf0b5f5ba74393acff5d24bfcf389fb9eff".to_string()),
         difficulty: Some("0x0".to_string()),
-        total_difficulty: Some("0xd8fb2...".to_string()),
+        totaldifficulty: Some("0xd8fb2...".to_string()),
         sha3_uncles: Some(
             "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347".to_string(),
         ),

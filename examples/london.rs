@@ -17,7 +17,7 @@ fn main() {
         miner: Some("0x829bd824b016326a401d083b33d092293333a830".to_string()),
         logs_bloom: Some("0x74adf8cfdd0a1ddf12f3d6d5bbd79cab73a19b6986fc007932d9acffafebb747debf512456c87e9afffa5f40fd21ad403b97f3b38e86e9e9db62433eb2b6f8547ad677fdab07f1adcb83686fb37db9ea7acb113f0d74b397324d9cfbf8f33cb3dbfb0d256bcbdaf608dd7b1ac168ee40e322b69bf675a6f4fbbbbe72dccbdd88fab28e7d94685c34bffc9bd1ff98ef777af7ff9793de951d336a1b75acbc7f11ce9dac7e9942ab6a363b4fbebbc3d738dbee5a993fa7c87adce26cbeddfdfcf4d59bba977fb7514a3da550c0b21f399e8bf56778c7dfdcfeeb2457abef1fe63eaf38ecbabdae6c237afd34378163feb6ccdb42f56782cd474bdf9ee9fadb94b4".to_string()),
         difficulty: Some("0x1b81c23e05b218".to_string()),
-        total_difficulty: Some("0x608af5dd578251af429".to_string()),
+        totaldifficulty: Some("0x608af5dd578251af429".to_string()),
         sha3_uncles: Some("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347".to_string()),
         timestamp: Some("0x610bdab3".to_string()), // Correct decimal representation of "0x610bdab3"
         extra_data: Some("0xe4b883e5bda9e7a59ee4bb99e9b1bc030521".to_string()),

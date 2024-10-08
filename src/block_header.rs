@@ -49,7 +49,7 @@ pub struct BlockHeader {
     pub miner: Option<String>,            // character varying(42)
     pub logs_bloom: Option<String>,       // character varying(1024)
     pub difficulty: Option<String>,       // character varying(78)
-    pub total_difficulty: Option<String>, // character varying(78)
+    pub totaldifficulty: Option<String>, // character varying(78)
     pub sha3_uncles: Option<String>,      // character varying(66)
     pub timestamp: Option<String>,        // character varying(100)
     pub extra_data: Option<String>,       // character varying(1024)
