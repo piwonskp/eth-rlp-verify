@@ -6,8 +6,8 @@ edition = "2021"
 description = "Ethereum block header verification across multiple eras using RLP encoding and Keccak256 hashing."
 license = "MIT"
 repository = "https://github.com/ametel01/eth-rlp-verify"
-keywords = ["ethereum", "block-header", "rlp", "keccak256", "blockchain", "verification"]
-categories = ["cryptography", "blockchain", "encoding", "data-structures"]
+keywords = ["ethereum",  "rlp", "keccak256", "blockchain", "verification"]
+categories = ["cryptography", "encoding", "data-structures"]
 readme = "README.md"                                                                                              # Ensure you have a README.md file
 
 [dependencies]
