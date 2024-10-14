@@ -3,7 +3,6 @@ use ethereum_types::{H160, H256, U256};
 use rlp::RlpStream;
 use std::str::FromStr;
 use tracing::debug;
-use tracing::info;
 
 /// Represents the block header for the Dencun upgrade in Ethereum.
 ///
@@ -194,11 +193,11 @@ pub fn verify_hash_dencun(block_hash: String, db_header: VerifiableBlockHeader) 
 
     // Compute the block hash
     let computed_block_hash = header.compute_hash();
-    info!("Computed Block Hash: {:?}", computed_block_hash);
+    debug!("Computed Block Hash: {:?}", computed_block_hash);
 
     // Check if the computed hash matches the given block hash
     let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
-    info!("Is the block hash valid? {}", is_valid);
+    debug!("Is the block hash valid? {}", is_valid);
 
     is_valid
 }
