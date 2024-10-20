@@ -4,7 +4,7 @@ mod london;
 mod paris;
 mod shapella;
 
-use crate::block_header::BlockHeader as VerifiableBlockHeader;
+use crate::block_header::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait};
 use crate::constants::{
     DENCUN_START, GENESIS_END, LONDON_END, LONDON_START, PARIS_END, PARIS_START, SHAPELLA_END,
     SHAPELLA_START,
@@ -80,3 +80,38 @@ pub fn determine_era(block_number: u64) -> Option<fn(String, VerifiableBlockHead
         None
     }
 }
+
+pub fn determine_era_encoder(block_number: u64) -> Option<fn(VerifiableBlockHeader) -> Vec<u8>> {
+    if (LONDON_START..=LONDON_END).contains(&block_number) {
+        Some(|header| london::BlockHeaderLondon::from_db_header(header).rlp_encode())
+    } else if (PARIS_START..=PARIS_END).contains(&block_number) {
+        Some(|header| paris::BlockHeaderParis::from_db_header(header).rlp_encode())
+    } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
+        Some(|header| shapella::BlockHeaderShapella::from_db_header(header).rlp_encode())
+    } else if block_number >= DENCUN_START {
+        Some(|header| dencun::BlockHeaderDencun::from_db_header(header).rlp_encode())
+    } else if block_number <= GENESIS_END {
+        Some(|header| genesis::BlockHeaderGenesis::from_db_header(header).rlp_encode())
+    } else {
+        None
+    }
+}
+
+pub fn determine_era_decoder(
+    block_number: u64,
+) -> Option<fn(&[u8]) -> Result<VerifiableBlockHeader, eyre::Report>> {
+    if block_number >= DENCUN_START {
+        Some(|data| dencun::BlockHeaderDencun::rlp_decode(data).map(|h| h.to_verifiable()))
+    } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
+        Some(|data| shapella::BlockHeaderShapella::rlp_decode(data).map(|h| h.to_verifiable()))
+    } else if (PARIS_START..=PARIS_END).contains(&block_number) {
+        Some(|data| paris::BlockHeaderParis::rlp_decode(data).map(|h| h.to_verifiable()))
+    } else if (LONDON_START..=LONDON_END).contains(&block_number) {
+        Some(|data| london::BlockHeaderLondon::rlp_decode(data).map(|h| h.to_verifiable()))
+    } else if block_number <= GENESIS_END {
+        Some(|data| genesis::BlockHeaderGenesis::rlp_decode(data).map(|h| h.to_verifiable()))
+    } else {
+        None
+    }
+}
+

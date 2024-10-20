@@ -1,6 +1,7 @@
 use crate::block_header::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait}; // Alias for clarity
 use ethereum_types::{H160, H256, U256};
-use rlp::RlpStream;
+use eyre::Result;
+use rlp::{Rlp, RlpStream};
 use std::str::FromStr;
 use tracing::debug;
 
@@ -97,6 +98,38 @@ impl BlockHeaderShapella {
                 .unwrap(),
         }
     }
+
+    /// Converts a `BlockHeaderShapella` into a common `VerifiableBlockHeader`.
+    ///
+    /// This method ensures that the Shapella-specific block header structure is converted into the
+    /// generic `VerifiableBlockHeader` structure used throughout the application.
+    pub fn to_verifiable(self) -> VerifiableBlockHeader {
+        VerifiableBlockHeader {
+            block_hash: "".to_string(), // Placeholder; compute if necessary.
+            parent_hash: Some(self.parent_hash.to_string()),
+            ommers_hash: Some(self.ommers_hash.to_string()),
+            miner: Some(self.beneficiary.to_string()),
+            state_root: Some(self.state_root.to_string()),
+            transaction_root: Some(self.transactions_root.to_string()),
+            receipts_root: Some(self.receipts_root.to_string()),
+            logs_bloom: Some(hex::encode(self.logs_bloom)),
+            difficulty: Some(self.difficulty.to_string()),
+            totaldifficulty: None, // Not applicable for Shapella.
+            number: self.number.as_u64() as i64,
+            gas_limit: self.gas_limit.as_u64() as i64,
+            gas_used: self.gas_used.as_u64() as i64,
+            timestamp: Some(self.timestamp.to_string()),
+            extra_data: Some(hex::encode(self.extra_data)),
+            mix_hash: Some(self.mix_hash.to_string()),
+            nonce: hex::encode(self.nonce),
+            base_fee_per_gas: Some(self.base_fee_per_gas.to_string()),
+            withdrawals_root: Some(self.withdrawals_root.to_string()),
+            blob_gas_used: None,
+            excess_blob_gas: None,
+            parent_beacon_block_root: None,
+            sha3_uncles: None, // Not applicable for Shapella.
+        }
+    }
 }
 
 /// Implements the `BlockHeaderTrait` for the `BlockHeaderShapella` type.
@@ -136,6 +169,35 @@ impl BlockHeaderTrait for BlockHeaderShapella {
         stream.append(&self.base_fee_per_gas);
         stream.append(&self.withdrawals_root);
         stream.out().to_vec()
+    }
+
+    fn rlp_decode(data: &[u8]) -> Result<Self> {
+        let rlp = Rlp::new(data);
+        Ok(BlockHeaderShapella {
+            parent_hash: rlp.val_at(0)?,
+            ommers_hash: rlp.val_at(1)?,
+            beneficiary: rlp.val_at(2)?,
+            state_root: rlp.val_at(3)?,
+            transactions_root: rlp.val_at(4)?,
+            receipts_root: rlp.val_at(5)?,
+            logs_bloom: rlp
+                .val_at::<Vec<u8>>(6)?
+                .try_into()
+                .map_err(|_| eyre::eyre!("Invalid logs_bloom size"))?,
+            difficulty: rlp.val_at(7)?,
+            number: rlp.val_at(8)?,
+            gas_limit: rlp.val_at(9)?,
+            gas_used: rlp.val_at(10)?,
+            timestamp: rlp.val_at(11)?,
+            extra_data: rlp.val_at(12)?,
+            mix_hash: rlp.val_at(13)?,
+            nonce: rlp
+                .val_at::<Vec<u8>>(14)?
+                .try_into()
+                .map_err(|_| eyre::eyre!("Invalid nonce size"))?,
+            base_fee_per_gas: rlp.val_at(15)?,
+            withdrawals_root: rlp.val_at(16)?,
+        })
     }
 }
 

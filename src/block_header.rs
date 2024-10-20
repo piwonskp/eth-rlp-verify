@@ -1,6 +1,7 @@
 use ethereum_types::H256;
-use sha3::{Digest, Keccak256};
+use eyre::Result;
 use serde::{Deserialize, Serialize};
+use sha3::{Digest, Keccak256};
 
 /// Represents an Ethereum block header with various properties like block hash, gas limits, and more.
 ///
@@ -34,7 +35,7 @@ use serde::{Deserialize, Serialize};
 /// - `blob_gas_used`: The amount of blob gas used, specific to blob transactions (optional).
 /// - `excess_blob_gas`: The excess blob gas present in the block (optional).
 /// - `parent_beacon_block_root`: The root of the parent beacon block, used in Ethereum's proof-of-stake chain (optional).
-#[derive(Clone,Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BlockHeader {
     pub block_hash: String,               // character(66) NOT NULL
     pub number: i64,                      // bigint NOT NULL
@@ -50,7 +51,7 @@ pub struct BlockHeader {
     pub miner: Option<String>,            // character varying(42)
     pub logs_bloom: Option<String>,       // character varying(1024)
     pub difficulty: Option<String>,       // character varying(78)
-    pub totaldifficulty: Option<String>, // character varying(78)
+    pub totaldifficulty: Option<String>,  // character varying(78)
     pub sha3_uncles: Option<String>,      // character varying(66)
     pub timestamp: Option<String>,        // character varying(100)
     pub extra_data: Option<String>,       // character varying(1024)
@@ -60,7 +61,6 @@ pub struct BlockHeader {
     pub excess_blob_gas: Option<String>,  // character varying(78)
     pub parent_beacon_block_root: Option<String>, // character varying(66)
 }
-
 
 /// A trait that defines common behaviors for Ethereum block headers, including RLP encoding and hash computation.
 ///
@@ -96,6 +96,19 @@ pub trait BlockHeaderTrait {
     ///
     /// A `Vec<u8>` containing the RLP-encoded block header.
     fn rlp_encode(&self) -> Vec<u8>;
+
+    /// Decodes an RLP-encoded byte vector into a block header struct.
+    ///
+    /// This function takes an RLP-encoded byte vector and decodes it into a block header.
+    ///
+    /// # Arguments
+    /// - `data`: A byte slice containing the RLP-encoded data.
+    ///
+    /// # Returns
+    /// - A `Result<Self>` which is either the decoded block header or an error if decoding fails.
+    fn rlp_decode(data: &[u8]) -> Result<Self>
+    where
+        Self: Sized;
 
     /// Computes the Keccak256 hash of the block header.
     ///

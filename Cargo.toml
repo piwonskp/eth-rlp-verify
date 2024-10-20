@@ -20,6 +20,7 @@ hex = "0.4"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dotenv = "0.15"
+eyre = "0.6"
 
 # Optional: Remove if async support is no longer required.
 tokio = { version = "1.40", features = ["full"] }

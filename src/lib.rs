@@ -1,7 +1,7 @@
 pub mod block_header;
 pub mod constants;
 pub mod eras;
-
+pub mod traits;
 use crate::block_header::BlockHeader as VerifiableBlockHeader;
 
 /// Verifies the validity of an Ethereum block header based on the block number and expected hash.
@@ -61,5 +61,15 @@ pub fn verify_block(
     match eras::determine_era(block_number) {
         Some(verify_fn) => verify_fn(block_hash.to_string(), block_header),
         None => false, // If the block number is out of the supported range
+    }
+}
+
+pub fn encode_block_header(
+    block_number: u64,
+    block_header: VerifiableBlockHeader,
+) -> Option<Vec<u8>> {
+    match eras::determine_era_encoder(block_number) {
+        Some(encoder) => Some(encoder(block_header)),
+        None => None,
     }
 }
