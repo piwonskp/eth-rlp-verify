@@ -24,21 +24,6 @@ use crate::block_header::BlockHeader as VerifiableBlockHeader;
 /// - `true`: The block hash matches the computed hash, and the block header is valid.
 /// - `false`: The block number is not within a supported era, or the computed block hash does not match the expected hash.
 ///
-/// # Example
-///
-/// ```rust
-/// let block_number = 15_537_394; // A block from the Paris era
-/// let block_header = fetch_block_header_from_db(block_number); // Fetch the block header from the database
-/// let block_hash = "0xabc..."; // Expected block hash for verification
-///
-/// let is_valid = verify_block(block_number, block_header, block_hash);
-/// if is_valid {
-///     println!("Block header is valid!");
-/// } else {
-///     println!("Invalid block header.");
-/// }
-/// ```
-///
 /// # Era Determination
 ///
 /// The function uses `eras::determine_era` to determine the correct era based on the `block_number`.
@@ -68,8 +53,5 @@ pub fn encode_block_header(
     block_number: u64,
     block_header: VerifiableBlockHeader,
 ) -> Option<Vec<u8>> {
-    match eras::determine_era_encoder(block_number) {
-        Some(encoder) => Some(encoder(block_header)),
-        None => None,
-    }
+    eras::determine_era_encoder(block_number).map(|encoder| encoder(block_header))
 }

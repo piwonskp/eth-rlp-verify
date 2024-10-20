@@ -29,7 +29,7 @@ use tracing::debug;
 /// - `mix_hash`: A PoW-related hash used to verify the mining process.
 /// - `nonce`: A 64-bit PoW nonce used in the block's PoW verification.
 /// - `base_fee_per_gas`: The minimum gas price per unit introduced by EIP-1559 during the London upgrade.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BlockHeaderLondon {
     pub parent_hash: H256,
     pub ommers_hash: H256,
@@ -95,7 +95,7 @@ impl BlockHeaderLondon {
     ///
     /// This method ensures that the London-specific block header structure is converted into
     /// the generic `VerifiableBlockHeader` structure used throughout the application.
-    pub fn to_verifiable(self) -> VerifiableBlockHeader {
+    pub fn into_verifiable(self) -> VerifiableBlockHeader {
         VerifiableBlockHeader {
             block_hash: "".to_string(), // Placeholder, computed if necessary
             parent_hash: Some(self.parent_hash.to_string()),
@@ -129,13 +129,6 @@ impl BlockHeaderLondon {
 /// This implementation enables encoding of the London block header using RLP (Recursive Length Prefix),
 /// a compact serialization format used in Ethereum. This method allows for serialization, verification,
 /// and the comparison of block headers.
-///
-/// # Example
-///
-/// ```rust
-/// let header = BlockHeaderLondon::from_db_header(db_header);
-/// let encoded_header = header.rlp_encode();
-/// ```
 impl BlockHeaderTrait for BlockHeaderLondon {
     /// RLP encodes the London block header, returning a vector of bytes.
     ///
@@ -210,17 +203,6 @@ impl BlockHeaderTrait for BlockHeaderLondon {
 /// # Returns
 ///
 /// A boolean value indicating whether the computed hash matches the provided hash.
-///
-/// # Example
-///
-/// ```rust
-/// let is_valid = verify_hash_london("0xabc...".to_string(), db_header);
-/// if is_valid {
-///     println!("Block hash is valid!");
-/// } else {
-///     println!("Invalid block hash.");
-/// }
-/// ```
 pub fn verify_hash_london(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderLondon::from_db_header(db_header);
 
@@ -236,4 +218,38 @@ pub fn verify_hash_london(block_hash: String, db_header: VerifiableBlockHeader) 
     let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
     debug!("Is the block hash valid? {}", is_valid);
     is_valid
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    fn mock_block_header_london() -> BlockHeaderLondon {
+        BlockHeaderLondon {
+            parent_hash: H256::zero(),
+            ommers_hash: H256::zero(),
+            beneficiary: H160::zero(),
+            state_root: H256::zero(),
+            transactions_root: H256::zero(),
+            receipts_root: H256::zero(),
+            logs_bloom: [0; 256],
+            difficulty: U256::zero(),
+            number: U256::zero(),
+            gas_limit: U256::zero(),
+            gas_used: U256::zero(),
+            timestamp: U256::zero(),
+            extra_data: vec![],
+            mix_hash: H256::zero(),
+            nonce: [0; 8],
+            base_fee_per_gas: U256::zero(),
+        }
+    }
+
+    #[test]
+    fn test_encode_decode_london() {
+        let header = mock_block_header_london();
+        let encoded = header.rlp_encode();
+        let decoded = BlockHeaderLondon::rlp_decode(&encoded).unwrap();
+        assert_eq!(header, decoded);
+    }
 }

@@ -17,6 +17,8 @@ pub use london::verify_hash_london;
 pub use paris::verify_hash_paris;
 pub use shapella::verify_hash_shapella;
 
+type DecoderFn = fn(&[u8]) -> Result<VerifiableBlockHeader, eyre::Report>;
+
 /// Determines the correct Ethereum era based on the block number and returns the corresponding
 /// hash verification function for that era.
 ///
@@ -43,24 +45,6 @@ pub use shapella::verify_hash_shapella;
 /// - **Shapella:** The era between `SHAPELLA_START` and `SHAPELLA_END`, introducing further changes to Ethereum's staking and withdrawal mechanisms.
 /// - **Dencun:** Blocks from `DENCUN_START` onwards, which represent the upcoming Dencun upgrade.
 /// - **Genesis:** The initial blocks from block 0 up to `GENESIS_END`, covering Ethereum's early history.
-///
-/// # Example
-///
-/// ```rust
-/// let block_number = 13000000; // Example block number
-/// if let Some(verify_fn) = determine_era(block_number) {
-///     let block_hash = "0xabc...".to_string();
-///     let db_header = fetch_block_header(block_number);
-///     let is_valid = verify_fn(block_hash, db_header);
-///     if is_valid {
-///         println!("Block is valid!");
-///     } else {
-///         println!("Invalid block.");
-///     }
-/// } else {
-///     println!("Unknown era for block number: {}", block_number);
-/// }
-/// ```
 ///
 /// # Notes
 ///
@@ -97,21 +81,18 @@ pub fn determine_era_encoder(block_number: u64) -> Option<fn(VerifiableBlockHead
     }
 }
 
-pub fn determine_era_decoder(
-    block_number: u64,
-) -> Option<fn(&[u8]) -> Result<VerifiableBlockHeader, eyre::Report>> {
-    if block_number >= DENCUN_START {
-        Some(|data| dencun::BlockHeaderDencun::rlp_decode(data).map(|h| h.to_verifiable()))
-    } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
-        Some(|data| shapella::BlockHeaderShapella::rlp_decode(data).map(|h| h.to_verifiable()))
-    } else if (PARIS_START..=PARIS_END).contains(&block_number) {
-        Some(|data| paris::BlockHeaderParis::rlp_decode(data).map(|h| h.to_verifiable()))
+pub fn determine_era_decoder(block_number: u64) -> Option<DecoderFn> {
+    if block_number <= GENESIS_END {
+        Some(|data| genesis::BlockHeaderGenesis::rlp_decode(data).map(|h| h.into_verifiable()))
     } else if (LONDON_START..=LONDON_END).contains(&block_number) {
-        Some(|data| london::BlockHeaderLondon::rlp_decode(data).map(|h| h.to_verifiable()))
-    } else if block_number <= GENESIS_END {
-        Some(|data| genesis::BlockHeaderGenesis::rlp_decode(data).map(|h| h.to_verifiable()))
+        Some(|data| london::BlockHeaderLondon::rlp_decode(data).map(|h| h.into_verifiable()))
+    } else if (PARIS_START..=PARIS_END).contains(&block_number) {
+        Some(|data| paris::BlockHeaderParis::rlp_decode(data).map(|h| h.into_verifiable()))
+    } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
+        Some(|data| shapella::BlockHeaderShapella::rlp_decode(data).map(|h| h.into_verifiable()))
+    } else if block_number >= DENCUN_START {
+        Some(|data| dencun::BlockHeaderDencun::rlp_decode(data).map(|h| h.into_verifiable()))
     } else {
         None
     }
 }
-

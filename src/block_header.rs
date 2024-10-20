@@ -68,23 +68,6 @@ pub struct BlockHeader {
 /// and hashing, which are critical for verifying the integrity of a block and its inclusion in the blockchain.
 /// It also provides a utility method for converting hexadecimal strings into fixed-size byte arrays, which is
 /// useful when handling Ethereum's cryptographic data.
-///
-/// # Example
-///
-/// ```rust
-/// struct MyBlockHeader {
-///     // block header fields...
-/// }
-///
-/// impl BlockHeaderTrait for MyBlockHeader {
-///     fn rlp_encode(&self) -> Vec<u8> {
-///         // perform RLP encoding...
-///     }
-/// }
-///
-/// let my_header = MyBlockHeader { /* fields... */ };
-/// let block_hash = my_header.compute_hash();
-/// ```
 pub trait BlockHeaderTrait {
     /// Encodes the block header using RLP (Recursive Length Prefix) encoding, which is used to serialize Ethereum objects.
     ///

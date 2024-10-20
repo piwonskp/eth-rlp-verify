@@ -32,7 +32,7 @@ use tracing::debug;
 /// - `parent_beacon_block_root`: The root of the parent beacon block, newly introduced in the Dencun upgrade.
 /// - `blob_gas_used`: The gas used for blob-related transactions (new in Dencun).
 /// - `excess_blob_gas`: The excess blob gas in the block, used to manage blob-related transaction fees (new in Dencun).
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BlockHeaderDencun {
     pub parent_hash: H256,
     pub ommers_hash: H256,
@@ -109,11 +109,11 @@ impl BlockHeaderDencun {
         }
     }
 
-     /// Converts a `BlockHeaderDencun` into a common `BlockHeader`.
+    /// Converts a `BlockHeaderDencun` into a common `BlockHeader`.
     ///
     /// This method ensures that the Dencun-specific block header structure is converted into the
     /// generic `BlockHeader` structure used throughout the application.
-    pub fn to_verifiable(self) -> VerifiableBlockHeader {
+    pub fn into_verifiable(self) -> VerifiableBlockHeader {
         VerifiableBlockHeader {
             block_hash: "".to_string(), // Placeholder; compute if necessary.
             parent_hash: Some(self.parent_hash.to_string()),
@@ -147,13 +147,6 @@ impl BlockHeaderDencun {
 /// This implementation provides RLP encoding for the Dencun block header, which is necessary for
 /// compact serialization and for verifying blocks on the Ethereum network. This trait enables
 /// serialization and hash verification, critical for validating blocks.
-///
-/// # Example
-///
-/// ```rust
-/// let header = BlockHeaderDencun::from_db_header(db_header);
-/// let encoded_header = header.rlp_encode();
-/// ```
 impl BlockHeaderTrait for BlockHeaderDencun {
     /// RLP encodes the Dencun block header, returning a vector of bytes.
     ///
@@ -244,17 +237,6 @@ impl BlockHeaderTrait for BlockHeaderDencun {
 /// # Returns
 ///
 /// A boolean indicating whether the computed block hash matches the provided block hash.
-///
-/// # Example
-///
-/// ```rust
-/// let is_valid = verify_hash_dencun("0xabc...".to_string(), db_header);
-/// if is_valid {
-///     println!("Block hash is valid!");
-/// } else {
-///     println!("Invalid block hash.");
-/// }
-/// ```
 pub fn verify_hash_dencun(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderDencun::from_db_header(db_header);
 
@@ -271,4 +253,44 @@ pub fn verify_hash_dencun(block_hash: String, db_header: VerifiableBlockHeader) 
     debug!("Is the block hash valid? {}", is_valid);
 
     is_valid
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // use crate::block_header::BlockHeader as VerifiableBlockHeader;
+    // use rlp::RlpStream;
+
+    fn mock_block_header_dencun() -> BlockHeaderDencun {
+        BlockHeaderDencun {
+            parent_hash: H256::zero(),
+            ommers_hash: H256::zero(),
+            beneficiary: H160::zero(),
+            state_root: H256::zero(),
+            transactions_root: H256::zero(),
+            receipts_root: H256::zero(),
+            logs_bloom: [0; 256],
+            difficulty: U256::zero(),
+            number: U256::zero(),
+            gas_limit: U256::zero(),
+            gas_used: U256::zero(),
+            timestamp: U256::zero(),
+            extra_data: vec![],
+            mix_hash: H256::zero(),
+            nonce: [0; 8],
+            base_fee_per_gas: U256::zero(),
+            withdrawals_root: H256::zero(),
+            parent_beacon_block_root: H256::zero(),
+            blob_gas_used: U256::zero(),
+            excess_blob_gas: U256::zero(),
+        }
+    }
+
+    #[test]
+    fn test_encode_decode_dencun() {
+        let header = mock_block_header_dencun();
+        let encoded = header.rlp_encode();
+        let decoded = BlockHeaderDencun::rlp_decode(&encoded).unwrap();
+        assert_eq!(header, decoded);
+    }
 }

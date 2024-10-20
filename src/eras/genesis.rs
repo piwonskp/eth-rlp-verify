@@ -29,7 +29,7 @@ use tracing::debug;
 /// - `extra_data`: Additional data added by the miner, up to 32 bytes.
 /// - `mix_hash`: A proof-of-work hash used to verify the mining process.
 /// - `nonce`: A 64-bit proof-of-work nonce used to verify the mining result.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BlockHeaderGenesis {
     pub parent_hash: H256,
     pub ommers_hash: H256,
@@ -88,13 +88,9 @@ impl BlockHeaderGenesis {
         }
     }
 
-    /// Converts a `BlockHeaderGenesis` into a `VerifiableBlockHeader`.
-    ///
-    /// This conversion ensures that the Genesis-specific block header structure is mapped
-    /// into the generic `VerifiableBlockHeader` structure used for cross-era compatibility.
-    pub fn to_verifiable(self) -> VerifiableBlockHeader {
+    pub fn into_verifiable(self) -> VerifiableBlockHeader {
         VerifiableBlockHeader {
-            block_hash: "".to_string(), // Placeholder, computed if necessary
+            block_hash: "".to_string(),
             parent_hash: Some(self.parent_hash.to_string()),
             ommers_hash: Some(self.ommers_hash.to_string()),
             miner: Some(self.beneficiary.to_string()),
@@ -103,7 +99,7 @@ impl BlockHeaderGenesis {
             receipts_root: Some(self.receipts_root.to_string()),
             logs_bloom: Some(hex::encode(self.logs_bloom)),
             difficulty: Some(self.difficulty.to_string()),
-            totaldifficulty: None, // Not applicable for Genesis
+            totaldifficulty: None,
             number: self.number.as_u64() as i64,
             gas_limit: self.gas_limit.as_u64() as i64,
             gas_used: self.gas_used.as_u64() as i64,
@@ -126,13 +122,6 @@ impl BlockHeaderGenesis {
 /// This implementation provides RLP encoding for the Genesis block header, which is critical for compact
 /// storage and transmission of the block header in Ethereum. The RLP encoding is also used during the process
 /// of verifying the block header by computing its hash.
-///
-/// # Example
-///
-/// ```rust
-/// let header = BlockHeaderGenesis::from_db_header(db_header);
-/// let encoded_header = header.rlp_encode();
-/// ```
 impl BlockHeaderTrait for BlockHeaderGenesis {
     /// RLP encodes the Genesis block header, returning a vector of bytes.
     ///
@@ -213,17 +202,6 @@ impl BlockHeaderTrait for BlockHeaderGenesis {
 /// # Returns
 ///
 /// A boolean value indicating whether the computed block hash matches the provided block hash.
-///
-/// # Example
-///
-/// ```rust
-/// let is_valid = verify_hash_genesis("0xabc...".to_string(), db_header);
-/// if is_valid {
-///     println!("Block hash is valid!");
-/// } else {
-///     println!("Invalid block hash.");
-/// }
-/// ```
 pub fn verify_hash_genesis(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderGenesis::from_db_header(db_header);
 
@@ -240,4 +218,37 @@ pub fn verify_hash_genesis(block_hash: String, db_header: VerifiableBlockHeader)
     debug!("Is the block hash valid? {}", is_valid);
 
     is_valid
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn mock_block_header_genesis() -> BlockHeaderGenesis {
+        BlockHeaderGenesis {
+            parent_hash: H256::zero(),
+            ommers_hash: H256::zero(),
+            beneficiary: H160::zero(),
+            state_root: H256::zero(),
+            transactions_root: H256::zero(),
+            receipts_root: H256::zero(),
+            logs_bloom: [0; 256],
+            difficulty: U256::zero(),
+            number: U256::zero(),
+            gas_limit: U256::zero(),
+            gas_used: U256::zero(),
+            timestamp: U256::zero(),
+            extra_data: vec![],
+            mix_hash: H256::zero(),
+            nonce: [0; 8],
+        }
+    }
+
+    #[test]
+    fn test_encode_decode_genesis() {
+        let header = mock_block_header_genesis();
+        let encoded = header.rlp_encode();
+        let decoded = BlockHeaderGenesis::rlp_decode(&encoded).unwrap();
+        assert_eq!(header, decoded);
+    }   
 }

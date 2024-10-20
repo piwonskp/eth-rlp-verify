@@ -33,7 +33,7 @@ use tracing::debug;
 /// - `nonce`: A 64-bit proof-of-work nonce used to validate the block's difficulty target.
 /// - `base_fee_per_gas`: The minimum gas price per unit for this block, part of EIP-1559.
 /// - `withdrawals_root`: The root hash of withdrawals in the block, introduced in Shapella.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BlockHeaderShapella {
     pub parent_hash: H256,
     pub ommers_hash: H256,
@@ -103,7 +103,7 @@ impl BlockHeaderShapella {
     ///
     /// This method ensures that the Shapella-specific block header structure is converted into the
     /// generic `VerifiableBlockHeader` structure used throughout the application.
-    pub fn to_verifiable(self) -> VerifiableBlockHeader {
+    pub fn into_verifiable(self) -> VerifiableBlockHeader {
         VerifiableBlockHeader {
             block_hash: "".to_string(), // Placeholder; compute if necessary.
             parent_hash: Some(self.parent_hash.to_string()),
@@ -216,17 +216,7 @@ impl BlockHeaderTrait for BlockHeaderShapella {
 /// # Returns
 ///
 /// A boolean indicating whether the computed block hash matches the provided `block_hash`.
-///
-/// # Example
-///
-/// ```rust
-/// let is_valid = verify_hash_shapella("0xabc...".to_string(), db_header);
-/// if is_valid {
-///     println!("The block hash is valid!");
-/// } else {
-///     println!("Invalid block hash.");
-/// }
-/// ```
+
 pub fn verify_hash_shapella(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderShapella::from_db_header(db_header);
 
@@ -242,4 +232,39 @@ pub fn verify_hash_shapella(block_hash: String, db_header: VerifiableBlockHeader
     let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
     debug!("Is the block hash valid? {}", is_valid);
     is_valid
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn mock_block_header_shapella() -> BlockHeaderShapella {
+        BlockHeaderShapella {
+            parent_hash: H256::zero(),
+            ommers_hash: H256::zero(),
+            beneficiary: H160::zero(),
+            state_root: H256::zero(),
+            transactions_root: H256::zero(),
+            receipts_root: H256::zero(),
+            logs_bloom: [0; 256],
+            difficulty: U256::zero(),
+            number: U256::zero(),
+            gas_limit: U256::zero(),
+            gas_used: U256::zero(),
+            timestamp: U256::zero(),
+            extra_data: vec![],
+            mix_hash: H256::zero(),
+            nonce: [0; 8],
+            base_fee_per_gas: U256::zero(),
+            withdrawals_root: H256::zero(),
+        }
+    }
+
+    #[test]
+    fn test_encode_decode_shapella() {
+        let header = mock_block_header_shapella();
+        let encoded = header.rlp_encode();
+        let decoded = BlockHeaderShapella::rlp_decode(&encoded).unwrap();
+        assert_eq!(header, decoded);
+    }
 }
