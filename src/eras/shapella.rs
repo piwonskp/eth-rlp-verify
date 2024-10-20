@@ -216,7 +216,6 @@ impl BlockHeaderTrait for BlockHeaderShapella {
 /// # Returns
 ///
 /// A boolean indicating whether the computed block hash matches the provided `block_hash`.
-
 pub fn verify_hash_shapella(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderShapella::from_db_header(db_header);
 
