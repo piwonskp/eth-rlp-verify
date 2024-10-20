@@ -12,32 +12,13 @@ use crate::block_header::BlockHeader as VerifiableBlockHeader;
 ///
 /// # Arguments
 ///
-/// - `block_number`: A `u64` representing the block number of the block being verified. The block number is used
-///   to determine the correct era (e.g., London, Paris, Shapella) and apply the corresponding block verification logic.
+/// - `block_number`: A `u64` representing the block number of the block being verified.
 /// - `block_header`: A `VerifiableBlockHeader` struct containing the block header data that needs to be verified.
-/// - `block_hash`: A string slice (`&str`) representing the expected hash of the block. This hash will be compared
-///   to the computed hash of the block header to determine if the block is valid.
+/// - `block_hash`: A string slice representing the expected hash of the block.
 ///
 /// # Returns
 ///
-/// A `bool` indicating whether the block header is valid:
-/// - `true`: The block hash matches the computed hash, and the block header is valid.
-/// - `false`: The block number is not within a supported era, or the computed block hash does not match the expected hash.
-///
-/// # Era Determination
-///
-/// The function uses `eras::determine_era` to determine the correct era based on the `block_number`.
-/// This ensures that the correct block structure and verification rules are applied for each Ethereum upgrade:
-/// - **Genesis to London**: The era from the Genesis block to the London upgrade.
-/// - **London to Paris**: The era starting with the London upgrade and ending with the Paris (The Merge) upgrade.
-/// - **Paris to Shapella**: The era from the Paris upgrade to the Shapella (Shanghai + Capella) upgrade.
-/// - **Shapella to Dencun**: The era starting with Shapella and continuing into the Dencun upgrade.
-///
-/// # Notes
-///
-/// - If the block number is not within the supported range, the function returns `false`.
-/// - This function is designed to be future-proof, allowing for additional Ethereum eras and upgrades to be supported
-///   by simply adding them to the `eras::determine_era` function.
+/// A `bool` indicating whether the block header is valid.
 pub fn verify_block(
     block_number: u64,
     block_header: VerifiableBlockHeader,
@@ -49,9 +30,35 @@ pub fn verify_block(
     }
 }
 
+/// Encodes an Ethereum block header into RLP format.
+///
+/// This function determines the correct era based on the block number and encodes
+/// the block header accordingly.
+///
+/// # Returns
+///
+/// An `Option<Vec<u8>>` containing the RLP-encoded block header data if successful.
 pub fn encode_block_header(
     block_number: u64,
     block_header: VerifiableBlockHeader,
 ) -> Option<Vec<u8>> {
     eras::determine_era_encoder(block_number).map(|encoder| encoder(block_header))
+}
+
+/// Decodes an RLP-encoded block header based on the block number.
+///
+/// This function determines the correct era for the given block number and decodes the RLP-encoded
+/// data into a `VerifiableBlockHeader`. If the block number is not within a recognized era or decoding
+/// fails, it returns `None`.
+///
+/// # Arguments
+///
+/// - `block_number`: A `u64` representing the block number of the block being decoded.
+/// - `encoded`: A byte slice containing the RLP-encoded block header data.
+///
+/// # Returns
+///
+/// An `Option<VerifiableBlockHeader>` containing the decoded block header if successful.
+pub fn decode_block_header(block_number: u64, encoded: &[u8]) -> Option<VerifiableBlockHeader> {
+    eras::determine_era_decoder(block_number).and_then(|decoder| decoder(encoded).ok())
 }

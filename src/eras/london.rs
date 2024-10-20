@@ -223,7 +223,7 @@ pub fn verify_hash_london(block_hash: String, db_header: VerifiableBlockHeader) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     fn mock_block_header_london() -> BlockHeaderLondon {
         BlockHeaderLondon {
             parent_hash: H256::zero(),

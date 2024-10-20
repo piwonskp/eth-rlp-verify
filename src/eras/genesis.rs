@@ -250,5 +250,5 @@ mod tests {
         let encoded = header.rlp_encode();
         let decoded = BlockHeaderGenesis::rlp_decode(&encoded).unwrap();
         assert_eq!(header, decoded);
-    }   
+    }
 }
