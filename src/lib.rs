@@ -1,3 +1,5 @@
+#![deny(unused_crate_dependencies)]
+
 pub mod block_header;
 pub mod constants;
 pub mod eras;
