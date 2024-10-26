@@ -140,8 +140,6 @@ pub trait BlockHeaderTrait {
             content.to_string()
         };
 
-        println!("hex_str: {}", hex_str);
-
         // Decode the hex string
         let bytes = hex::decode(&padded_content).expect("Failed to decode hex string");
 

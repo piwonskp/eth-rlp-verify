@@ -65,3 +65,62 @@ pub fn encode_block_header(
 pub fn decode_block_header(block_number: u64, encoded: &[u8]) -> Option<VerifiableBlockHeader> {
     eras::determine_era_decoder(block_number).and_then(|decoder| decoder(encoded).ok())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{decode_block_header, encode_block_header};
+    use crate::test_helpers::create_test_block_header_london; // Adjust import as needed
+
+    #[test]
+    #[ignore]
+    fn test_block_header_encoding_decoding_debug() {
+        // Create the test block header for London era
+        let original_header = create_test_block_header_london();
+        let block_number = original_header.number as u64;
+
+        println!("Original Header: {:#?}", original_header);
+
+        // Step 1: Encode the block header
+        let encoded =
+            encode_block_header(block_number, original_header.clone()).expect("Encoding failed");
+
+        println!("Encoded Bytes: {:?}", encoded);
+
+        // Debug: Reprint encoded bytes as hex
+        let encoded_hex: String = encoded.iter().map(|b| format!("{:02x}", b)).collect();
+        println!("Encoded Hex: {}", encoded_hex);
+
+        // Step 2: Decode the block header
+        let decoded_header = decode_block_header(block_number, &encoded).expect("Decoding failed");
+
+        println!("Decoded Header: {:#?}", decoded_header);
+
+        // Step 3: Compare individual fields for discrepancies
+        if original_header.parent_hash != decoded_header.parent_hash {
+            println!(
+                "Mismatch in parent_hash:\nOriginal: {}\nDecoded: {}",
+                original_header.parent_hash.clone().unwrap_or_default(),
+                decoded_header.parent_hash.clone().unwrap_or_default()
+            );
+        }
+        assert_eq!(
+            original_header.parent_hash, decoded_header.parent_hash,
+            "Mismatch in parent_hash"
+        );
+
+        assert_eq!(
+            original_header.nonce, decoded_header.nonce,
+            "Mismatch in nonce"
+        );
+
+        assert_eq!(
+            original_header.base_fee_per_gas, decoded_header.base_fee_per_gas,
+            "Mismatch in base_fee_per_gas"
+        );
+
+        assert_eq!(
+            original_header, decoded_header,
+            "The original and decoded headers do not match"
+        );
+    }
+}

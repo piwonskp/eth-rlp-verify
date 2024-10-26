@@ -63,9 +63,9 @@ impl BlockHeaderGenesis {
     /// A `BlockHeaderGenesis` instance containing the parsed and validated block header data.
     pub fn from_db_header(db_header: VerifiableBlockHeader) -> Self {
         let logs_bloom = <Self as BlockHeaderTrait>::hex_to_fixed_array::<256>(
-            &db_header.logs_bloom.unwrap_or_default(),
+            &db_header.logs_bloom.clone().unwrap_or_default(),
         );
-        let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>(&db_header.nonce);
+        let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>(&db_header.nonce.clone());
 
         BlockHeaderGenesis {
             parent_hash: H256::from_str(&db_header.parent_hash.unwrap_or_default()).unwrap(),
