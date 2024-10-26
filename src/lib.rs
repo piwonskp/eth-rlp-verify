@@ -3,8 +3,8 @@
 pub mod block_header;
 pub mod constants;
 pub mod eras;
-pub mod traits;
 pub mod test_helpers;
+pub mod traits;
 use crate::block_header::BlockHeader as VerifiableBlockHeader;
 
 /// Verifies the validity of an Ethereum block header based on the block number and expected hash.
@@ -68,7 +68,7 @@ pub fn decode_block_header(block_number: u64, encoded: &[u8]) -> Option<Verifiab
 
 #[cfg(test)]
 mod tests {
-    use super::{encode_block_header, decode_block_header};
+    use super::{decode_block_header, encode_block_header};
     use crate::test_helpers::create_test_block_header_london; // Adjust import as needed
 
     #[test]
@@ -78,14 +78,16 @@ mod tests {
         let block_number = original_header.number as u64;
 
         // Encode the block header
-        let encoded = encode_block_header(block_number, original_header.clone())
-            .expect("Encoding failed");
+        let encoded =
+            encode_block_header(block_number, original_header.clone()).expect("Encoding failed");
 
         // Decode the block header
-        let decoded_header = decode_block_header(block_number, &encoded)
-            .expect("Decoding failed");
+        let decoded_header = decode_block_header(block_number, &encoded).expect("Decoding failed");
 
         // Verify that the original and decoded headers are the same
-        assert_eq!(original_header, decoded_header, "Decoded header does not match original header");
+        assert_eq!(
+            original_header, decoded_header,
+            "Decoded header does not match original header"
+        );
     }
 }

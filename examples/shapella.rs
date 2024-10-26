@@ -1,5 +1,5 @@
-use eth_rlp_verify::verify_block;
 use eth_rlp_verify::test_helpers::create_test_block_header_shapella;
+use eth_rlp_verify::verify_block;
 
 fn main() {
     let block_header = create_test_block_header_shapella();
