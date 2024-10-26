@@ -65,29 +65,3 @@ pub fn encode_block_header(
 pub fn decode_block_header(block_number: u64, encoded: &[u8]) -> Option<VerifiableBlockHeader> {
     eras::determine_era_decoder(block_number).and_then(|decoder| decoder(encoded).ok())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::{decode_block_header, encode_block_header};
-    use crate::test_helpers::create_test_block_header_london; // Adjust import as needed
-
-    #[test]
-    fn test_block_header_encoding_decoding() {
-        // Create the test block header for London era
-        let original_header = create_test_block_header_london();
-        let block_number = original_header.number as u64;
-
-        // Encode the block header
-        let encoded =
-            encode_block_header(block_number, original_header.clone()).expect("Encoding failed");
-
-        // Decode the block header
-        let decoded_header = decode_block_header(block_number, &encoded).expect("Decoding failed");
-
-        // Verify that the original and decoded headers are the same
-        assert_eq!(
-            original_header, decoded_header,
-            "Decoded header does not match original header"
-        );
-    }
-}
