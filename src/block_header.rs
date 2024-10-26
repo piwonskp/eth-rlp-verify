@@ -126,24 +126,24 @@ pub trait BlockHeaderTrait {
     ///
     /// This function will panic if the length of the decoded bytes does not match the expected size `N`.
     fn hex_to_fixed_array<const N: usize>(hex_str: &str) -> [u8; N] {
-    if hex_str.is_empty() || hex_str == "0x" {
-        return [0u8; N]; // Return an empty array if the input is empty
-    }
+        if hex_str.is_empty() || hex_str == "0x" {
+            return [0u8; N]; // Return an empty array if the input is empty
+        }
 
-    // Ensure the hex string (excluding the "0x" prefix) has an even length
-    let content = &hex_str[2..];
-    if content.len() % 2 != 0 {
-        panic!("Invalid input length: expected even length, got odd length");
-    }
+        // Ensure the hex string (excluding the "0x" prefix) has an even length
+        let content = &hex_str[2..];
+        if content.len() % 2 != 0 {
+            panic!("Invalid input length: expected even length, got odd length");
+        }
 
-    let bytes = hex::decode(content).expect("Failed to decode hex string");
+        let bytes = hex::decode(content).expect("Failed to decode hex string");
 
-    if bytes.len() != N {
-        panic!("Invalid input length: expected {}, got {}", N, bytes.len());
-    }
+        if bytes.len() != N {
+            panic!("Invalid input length: expected {}, got {}", N, bytes.len());
+        }
 
-    let mut array = [0u8; N];
-    array.copy_from_slice(&bytes);
+        let mut array = [0u8; N];
+        array.copy_from_slice(&bytes);
         array
     }
 }
@@ -169,8 +169,8 @@ mod tests {
         let hex_str = "0x1234567890abcdef1234567890abcdef";
         let result = BlockHeaderImpl::hex_to_fixed_array::<16>(hex_str);
         let expected: [u8; 16] = [
-            0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef,
-            0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef,
+            0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab,
+            0xcd, 0xef,
         ];
         assert_eq!(result, expected);
     }
