@@ -75,7 +75,9 @@ impl BlockHeaderDencun {
         let logs_bloom = <Self as BlockHeaderTrait>::hex_to_fixed_array::<256>(
             &db_header.logs_bloom.unwrap_or_default(),
         );
-        let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>(&db_header.nonce);
+        let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>(
+            &"0x0000000000000000".to_string(),
+        );
 
         BlockHeaderDencun {
             parent_hash: H256::from_str(&db_header.parent_hash.unwrap_or_default()).unwrap(),
