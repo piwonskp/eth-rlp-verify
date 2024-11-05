@@ -100,12 +100,19 @@ impl BlockHeaderDencun {
             withdrawals_root: H256::from_str(&db_header.withdrawals_root.unwrap_or_default())
                 .unwrap(),
             parent_beacon_block_root: H256::from_str(
-                &db_header.parent_beacon_block_root.unwrap_or_default(),
+                &db_header
+                    .parent_beacon_block_root
+                    .unwrap_or_else(|| "".to_string()),
             )
-            .unwrap(),
-            blob_gas_used: U256::from_str(&db_header.blob_gas_used.unwrap_or_default()).unwrap(),
-            excess_blob_gas: U256::from_str(&db_header.excess_blob_gas.unwrap_or_default())
-                .unwrap(),
+            .unwrap_or_default(),
+            blob_gas_used: U256::from_str(
+                &db_header.blob_gas_used.unwrap_or_else(|| "".to_string()),
+            )
+            .unwrap_or_default(),
+            excess_blob_gas: U256::from_str(
+                &db_header.excess_blob_gas.unwrap_or_else(|| "".to_string()),
+            )
+            .unwrap_or_default(),
         }
     }
 
