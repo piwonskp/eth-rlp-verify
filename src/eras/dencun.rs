@@ -86,7 +86,7 @@ impl BlockHeaderDencun {
                 .unwrap(),
             receipts_root: H256::from_str(&db_header.receipts_root.unwrap_or_default()).unwrap(),
             logs_bloom,
-            difficulty: U256::from_str(&db_header.difficulty.unwrap_or("0x0".to_string())).unwrap(),
+            difficulty: U256::from_str(&db_header.difficulty.unwrap_or_default()).unwrap(),
             number: U256::from(db_header.number as u64),
             gas_limit: U256::from(db_header.gas_limit as u64),
             gas_used: U256::from(db_header.gas_used as u64),
@@ -100,12 +100,14 @@ impl BlockHeaderDencun {
             withdrawals_root: H256::from_str(&db_header.withdrawals_root.unwrap_or_default())
                 .unwrap(),
             parent_beacon_block_root: H256::from_str(
-                &db_header.parent_beacon_block_root.unwrap_or_default(),
+                &db_header
+                    .parent_beacon_block_root
+                    .unwrap_or("0x".to_string()),
             )
             .unwrap_or_default(),
-            blob_gas_used: U256::from_str(&db_header.blob_gas_used.unwrap_or_default())
+            blob_gas_used: U256::from_str(&db_header.blob_gas_used.unwrap_or("0x".to_string()))
                 .unwrap_or_default(),
-            excess_blob_gas: U256::from_str(&db_header.excess_blob_gas.unwrap_or_default())
+            excess_blob_gas: U256::from_str(&db_header.excess_blob_gas.unwrap_or("0x".to_string()))
                 .unwrap_or_default(),
         }
     }
