@@ -5,6 +5,43 @@ pub mod eras;
 pub mod test_helpers;
 pub mod traits;
 use eth_rlp_types::BlockHeader as VerifiableBlockHeader;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum VerificationError {
+    #[error("Block {0} is invalid (hash: {1})")]
+    InvalidBlock(i64, String),
+    #[error("Block {0} parent hash mismatch. Expected: {1}, Got: {2}")]
+    ParentHashMismatch(i64, String, String),
+}
+
+pub fn are_blocks_and_chain_valid(block_headers: &[VerifiableBlockHeader]) -> eyre::Result<bool> {
+    for (i, block) in block_headers.iter().enumerate() {
+        let block_hash = block.block_hash.clone();
+        let parent_hash = block.parent_hash.clone().unwrap_or_default();
+        let block_number = block.number;
+
+        if !verify_block(block_number as u64, block.clone(), &block_hash) {
+            return Err(VerificationError::InvalidBlock(block_number, block_hash).into());
+        }
+
+        if i > 0 {
+            let previous_block = &block_headers[i - 1];
+            let previous_block_hash = previous_block.block_hash.clone();
+
+            if parent_hash != previous_block_hash {
+                return Err(VerificationError::ParentHashMismatch(
+                    block_number,
+                    previous_block_hash,
+                    parent_hash,
+                )
+                .into());
+            }
+        }
+    }
+
+    Ok(true)
+}
 
 /// Verifies the validity of an Ethereum block header based on the block number and expected hash.
 ///
