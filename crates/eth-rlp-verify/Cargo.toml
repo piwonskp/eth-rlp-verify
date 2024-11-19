@@ -1,14 +1,7 @@
 [package]
 name = "eth-rlp-verify"
-version = "0.1.0"
-authors = ["Alex Meteli alex-metelli@gmx.com>"]
-edition = "2021"
-description = "Ethereum block header verification across multiple eras using RLP encoding and Keccak256 hashing."
-license = "MIT"
-repository = "https://github.com/ametel01/eth-rlp-verify"
-keywords = ["ethereum",  "rlp", "keccak256", "blockchain", "verification"]
-categories = ["cryptography", "encoding", "data-structures"]
-readme = "README.md"                                                                                              # Ensure you have a README.md file
+version = { workspace = true }
+edition = { workspace = true }                                                                                           # Ensure you have a README.md file
 
 [dependencies]
 eth-rlp-types = { path = "../eth-rlp-types" }
