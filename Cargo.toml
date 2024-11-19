@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*"]
+members = ["crates/eth-rlp-types", "crates/eth-rlp-verify"]
 
 resolver = "2"
 
