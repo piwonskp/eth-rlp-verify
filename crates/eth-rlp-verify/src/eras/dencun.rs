@@ -1,9 +1,8 @@
-use crate::block_header::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait}; // Alias for clarity
+use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait}; // Alias for clarity
 use ethereum_types::{H160, H256, U256};
 use eyre::Result;
 use rlp::{Rlp, RlpStream};
 use std::str::FromStr;
-use tracing::debug;
 /// Represents the block header for the Dencun upgrade in Ethereum.
 ///
 /// The Dencun upgrade introduces several new fields to the Ethereum block header, such as `parent_beacon_block_root`,
@@ -243,19 +242,11 @@ impl BlockHeaderTrait for BlockHeaderDencun {
 pub fn verify_hash_dencun(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderDencun::from_db_header(db_header);
 
-    // Log the RLP encoded data for debugging purposes
-    let rlp_encoded = header.rlp_encode();
-    debug!("RLP Encoded: {:?}", rlp_encoded);
-
     // Compute the block hash
     let computed_block_hash = header.compute_hash();
-    debug!("Computed Block Hash: {:?}", computed_block_hash);
 
     // Check if the computed hash matches the given block hash
-    let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
-    debug!("Is the block hash valid? {}", is_valid);
-
-    is_valid
+    computed_block_hash == H256::from_str(&block_hash).unwrap() 
 }
 
 #[cfg(test)]

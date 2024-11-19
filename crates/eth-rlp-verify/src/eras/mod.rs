@@ -4,11 +4,11 @@ mod london;
 mod paris;
 mod shapella;
 
-use crate::block_header::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait};
 use crate::constants::{
     DENCUN_START, GENESIS_END, LONDON_END, LONDON_START, PARIS_END, PARIS_START, SHAPELLA_END,
     SHAPELLA_START,
 };
+use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait};
 
 // Re-export each era's verification function to make them accessible at the module level.
 pub use dencun::verify_hash_dencun;

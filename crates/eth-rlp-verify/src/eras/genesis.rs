@@ -1,36 +1,35 @@
-use crate::block_header::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait}; // Alias for clarity
+use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait}; // Alias for clarity
 use ethereum_types::{H160, H256, U256};
 use eyre::Result;
 use rlp::{Rlp, RlpStream};
 use std::str::FromStr;
-use tracing::debug;
-/// Represents an Ethereum block header for the Paris upgrade.
+
+/// Represents an Ethereum block header for the Genesis era.
 ///
-/// The Paris upgrade marks Ethereum's transition from proof-of-work (PoW) to proof-of-stake (PoS),
-/// and this struct stores key properties of a block header during that period. It contains fields
-/// that describe various cryptographic roots, gas limits, and mining information required to verify
-/// and authenticate the block.
+/// The Genesis era refers to the early blocks in the Ethereum blockchain, starting from the Genesis block
+/// and continuing through the initial blocks before major upgrades. This struct contains the fields necessary
+/// for verifying blocks from the Genesis era, including cryptographic data, gas usage, and other metadata
+/// required to validate and authenticate these early blocks.
 ///
 /// # Fields
 ///
-/// - `parent_hash`: The hash of the parent block, which links this block to the previous one.
-/// - `ommers_hash`: The hash of ommer (uncle) blocks included in this block.
-/// - `beneficiary`: The Ethereum address of the miner or validator who produced this block.
-/// - `state_root`: The root hash of the state trie after this block is processed.
-/// - `transactions_root`: The root hash of the Merkle tree of transactions in this block.
-/// - `receipts_root`: The root hash of the Merkle tree of transaction receipts for this block.
-/// - `logs_bloom`: A bloom filter used for fast log searching, filtering relevant logs efficiently.
-/// - `difficulty`: The difficulty value that was required to mine the block in proof-of-work.
-/// - `number`: The block number, indicating its position in the blockchain.
-/// - `gas_limit`: The maximum gas allowed to be consumed by transactions in this block.
-/// - `gas_used`: The total amount of gas used by the transactions in the block.
-/// - `timestamp`: The timestamp indicating when the block was mined.
-/// - `extra_data`: Extra data associated with the block, typically set by the miner, up to 32 bytes.
-/// - `mix_hash`: A hash used to verify the proof-of-work (PoW) mining result.
-/// - `nonce`: The 64-bit nonce used to verify the PoW and mine the block.
-/// - `base_fee_per_gas`: The minimum gas fee for transactions in this block, as defined in EIP-1559.
+/// - `parent_hash`: The hash of the parent block that links this block to the blockchain.
+/// - `ommers_hash`: The hash of the ommers (uncle) blocks included in this block.
+/// - `beneficiary`: The Ethereum address of the miner who produced this block.
+/// - `state_root`: The root of the state trie after the block has been processed.
+/// - `transactions_root`: The Merkle root of the transactions included in the block.
+/// - `receipts_root`: The Merkle root of the receipts for transactions included in the block.
+/// - `logs_bloom`: A 256-byte bloom filter for fast searching and filtering of logs.
+/// - `difficulty`: The difficulty level required to mine the block in the proof-of-work algorithm.
+/// - `number`: The block number, which indicates its position in the blockchain.
+/// - `gas_limit`: The maximum amount of gas that transactions within the block can consume.
+/// - `gas_used`: The actual gas consumed by the transactions in this block.
+/// - `timestamp`: The time at which the block was mined.
+/// - `extra_data`: Additional data added by the miner, up to 32 bytes.
+/// - `mix_hash`: A proof-of-work hash used to verify the mining process.
+/// - `nonce`: A 64-bit proof-of-work nonce used to verify the mining result.
 #[derive(Debug, PartialEq)]
-pub struct BlockHeaderParis {
+pub struct BlockHeaderGenesis {
     pub parent_hash: H256,
     pub ommers_hash: H256,
     pub beneficiary: H160,
@@ -46,29 +45,28 @@ pub struct BlockHeaderParis {
     pub extra_data: Vec<u8>,
     pub mix_hash: H256,
     pub nonce: [u8; 8],
-    pub base_fee_per_gas: U256,
 }
 
-impl BlockHeaderParis {
-    /// Converts a `VerifiableBlockHeader` fetched from the database into a `BlockHeaderParis`.
+impl BlockHeaderGenesis {
+    /// Converts a `VerifiableBlockHeader` fetched from the database into a `BlockHeaderGenesis`.
     ///
-    /// This function transforms a `VerifiableBlockHeader` into a `BlockHeaderParis` structure,
-    /// parsing necessary fields such as the state root, transactions root, and miner's address.
+    /// This method takes a database block header and converts it into the appropriate `BlockHeaderGenesis` structure
+    /// by parsing and populating all necessary fields such as `parent_hash`, `ommers_hash`, and `logs_bloom`.
     ///
     /// # Arguments
     ///
-    /// - `db_header`: A `VerifiableBlockHeader` fetched from the database, containing the raw data.
+    /// - `db_header`: A `VerifiableBlockHeader` fetched from the database, containing various fields in string format.
     ///
     /// # Returns
     ///
-    /// A `BlockHeaderParis` instance with parsed and populated fields.
+    /// A `BlockHeaderGenesis` instance containing the parsed and validated block header data.
     pub fn from_db_header(db_header: VerifiableBlockHeader) -> Self {
         let logs_bloom = <Self as BlockHeaderTrait>::hex_to_fixed_array::<256>(
-            &db_header.logs_bloom.unwrap_or_default(),
+            &db_header.logs_bloom.clone().unwrap_or_default(),
         );
-        let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>(&db_header.nonce);
+        let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>(&db_header.nonce.clone());
 
-        BlockHeaderParis {
+        BlockHeaderGenesis {
             parent_hash: H256::from_str(&db_header.parent_hash.unwrap_or_default()).unwrap(),
             ommers_hash: H256::from_str(&db_header.sha3_uncles.unwrap_or_default()).unwrap(),
             beneficiary: H160::from_str(&db_header.miner.unwrap_or_default()).unwrap(),
@@ -86,18 +84,12 @@ impl BlockHeaderParis {
                 .unwrap_or_default(),
             mix_hash: H256::from_str(&db_header.mix_hash.unwrap_or_default()).unwrap(),
             nonce,
-            base_fee_per_gas: U256::from_str(&db_header.base_fee_per_gas.unwrap_or_default())
-                .unwrap(),
         }
     }
 
-    /// Converts a `BlockHeaderParis` into a common `VerifiableBlockHeader`.
-    ///
-    /// This method ensures that the Paris-specific block header structure is converted into the
-    /// generic `VerifiableBlockHeader` structure used throughout the application.
     pub fn into_verifiable(self) -> VerifiableBlockHeader {
         VerifiableBlockHeader {
-            block_hash: "".to_string(), // Placeholder; compute if necessary.
+            block_hash: "".to_string(),
             parent_hash: Some(self.parent_hash.to_string()),
             ommers_hash: Some(self.ommers_hash.to_string()),
             miner: Some(self.beneficiary.to_string()),
@@ -106,7 +98,7 @@ impl BlockHeaderParis {
             receipts_root: Some(self.receipts_root.to_string()),
             logs_bloom: Some(hex::encode(self.logs_bloom)),
             difficulty: Some(self.difficulty.to_string()),
-            totaldifficulty: None, // Not applicable for Paris.
+            totaldifficulty: None,
             number: self.number.as_u64() as i64,
             gas_limit: self.gas_limit.as_u64() as i64,
             gas_used: self.gas_used.as_u64() as i64,
@@ -114,7 +106,7 @@ impl BlockHeaderParis {
             extra_data: Some(hex::encode(self.extra_data)),
             mix_hash: Some(self.mix_hash.to_string()),
             nonce: hex::encode(self.nonce),
-            base_fee_per_gas: Some(self.base_fee_per_gas.to_string()),
+            base_fee_per_gas: None,
             withdrawals_root: None,
             blob_gas_used: None,
             excess_blob_gas: None,
@@ -124,22 +116,22 @@ impl BlockHeaderParis {
     }
 }
 
-/// Implements the `BlockHeaderTrait` for `BlockHeaderParis`.
+/// Implements the `BlockHeaderTrait` for `BlockHeaderGenesis`.
 ///
-/// This trait implementation enables RLP encoding for the Paris block header, which is essential
-/// for compact and efficient serialization. It ensures that the Paris block header can be serialized
-/// and verified using Ethereum's standard methods.
-impl BlockHeaderTrait for BlockHeaderParis {
-    /// RLP encodes the Paris block header, producing a vector of bytes.
+/// This implementation provides RLP encoding for the Genesis block header, which is critical for compact
+/// storage and transmission of the block header in Ethereum. The RLP encoding is also used during the process
+/// of verifying the block header by computing its hash.
+impl BlockHeaderTrait for BlockHeaderGenesis {
+    /// RLP encodes the Genesis block header, returning a vector of bytes.
     ///
-    /// This function encodes all 16 fields of the Paris block header in compliance with
-    /// Ethereum's RLP encoding scheme, which is used for serialization and block verification.
+    /// This function encodes all 15 fields of the Genesis block header using Ethereum's RLP (Recursive Length Prefix) format,
+    /// which is essential for serialization, verification, and block consistency checks.
     ///
     /// # Returns
     ///
     /// A `Vec<u8>` containing the RLP-encoded block header data.
     fn rlp_encode(&self) -> Vec<u8> {
-        let mut stream = RlpStream::new_list(16); // 16 fields in Paris block header
+        let mut stream = RlpStream::new_list(15); // 15 fields in Genesis block header
         stream.append(&self.parent_hash);
         stream.append(&self.ommers_hash);
         stream.append(&self.beneficiary);
@@ -155,13 +147,21 @@ impl BlockHeaderTrait for BlockHeaderParis {
         stream.append(&self.extra_data);
         stream.append(&self.mix_hash);
         stream.append(&self.nonce.as_slice());
-        stream.append(&self.base_fee_per_gas);
         stream.out().to_vec()
     }
 
+    /// Decodes an RLP-encoded byte slice into a `BlockHeaderGenesis`.
+    ///
+    /// This function decodes the byte slice into the 15 fields of the Genesis block header.
+    ///
+    /// # Arguments
+    /// - `data`: A byte slice containing the RLP-encoded data.
+    ///
+    /// # Returns
+    /// - A `Result<Self>` containing the decoded block header or an error if decoding fails.
     fn rlp_decode(data: &[u8]) -> Result<Self> {
         let rlp = Rlp::new(data);
-        Ok(BlockHeaderParis {
+        Ok(BlockHeaderGenesis {
             parent_hash: rlp.val_at(0)?,
             ommers_hash: rlp.val_at(1)?,
             beneficiary: rlp.val_at(2)?,
@@ -183,48 +183,40 @@ impl BlockHeaderTrait for BlockHeaderParis {
                 .val_at::<Vec<u8>>(14)?
                 .try_into()
                 .map_err(|_| eyre::eyre!("Invalid nonce size"))?,
-            base_fee_per_gas: rlp.val_at(15)?,
         })
     }
 }
 
-/// Verifies the integrity of a Paris block hash by comparing it with the computed hash.
+/// Verifies the hash of a Genesis era block by comparing the computed hash to the provided hash.
 ///
-/// This function uses the provided block hash and the database block header to create a `BlockHeaderParis`,
-/// then computes the block hash by RLP encoding the header and applying the Keccak256 hashing algorithm.
-/// The computed hash is compared to the provided `block_hash` to check if the block is valid.
+/// This function verifies the integrity of a block from the Genesis era by taking a block header from
+/// the database, converting it to a `BlockHeaderGenesis`, and encoding it using RLP. The computed hash
+/// is then compared to the provided block hash to ensure correctness.
 ///
 /// # Arguments
 ///
-/// - `block_hash`: The expected hash of the block (as a hexadecimal string).
-/// - `db_header`: A `VerifiableBlockHeader` containing block header information from the database.
+/// - `block_hash`: The expected hash of the block as a hexadecimal string.
+/// - `db_header`: A `VerifiableBlockHeader` fetched from the database, containing the raw block header data.
 ///
 /// # Returns
 ///
-/// A boolean indicating whether the computed block hash matches the provided hash.
-pub fn verify_hash_paris(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
-    let header = BlockHeaderParis::from_db_header(db_header);
-
-    // Log the RLP encoded data for debugging purposes
-    let rlp_encoded = header.rlp_encode();
-    debug!("RLP Encoded: {:?}", rlp_encoded);
+/// A boolean value indicating whether the computed block hash matches the provided block hash.
+pub fn verify_hash_genesis(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
+    let header = BlockHeaderGenesis::from_db_header(db_header);
 
     // Compute the block hash
     let computed_block_hash = header.compute_hash();
-    debug!("Computed Block Hash: {:?}", computed_block_hash);
 
     // Check if the computed hash matches the given block hash
-    let is_valid = computed_block_hash == H256::from_str(&block_hash).unwrap();
-    debug!("Is the block hash valid? {}", is_valid);
-    is_valid
+    computed_block_hash == H256::from_str(&block_hash).unwrap()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn mock_block_header_paris() -> BlockHeaderParis {
-        BlockHeaderParis {
+    fn mock_block_header_genesis() -> BlockHeaderGenesis {
+        BlockHeaderGenesis {
             parent_hash: H256::zero(),
             ommers_hash: H256::zero(),
             beneficiary: H160::zero(),
@@ -240,15 +232,14 @@ mod tests {
             extra_data: vec![],
             mix_hash: H256::zero(),
             nonce: [0; 8],
-            base_fee_per_gas: U256::zero(),
         }
     }
 
     #[test]
-    fn test_encode_decode_paris() {
-        let header = mock_block_header_paris();
+    fn test_encode_decode_genesis() {
+        let header = mock_block_header_genesis();
         let encoded = header.rlp_encode();
-        let decoded = BlockHeaderParis::rlp_decode(&encoded).unwrap();
+        let decoded = BlockHeaderGenesis::rlp_decode(&encoded).unwrap();
         assert_eq!(header, decoded);
     }
 }

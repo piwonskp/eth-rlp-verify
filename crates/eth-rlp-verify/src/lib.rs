@@ -1,11 +1,10 @@
 #![deny(unused_crate_dependencies)]
 
-pub mod block_header;
 pub mod constants;
 pub mod eras;
 pub mod test_helpers;
 pub mod traits;
-use crate::block_header::BlockHeader as VerifiableBlockHeader;
+use eth_rlp_types::BlockHeader as VerifiableBlockHeader;
 
 /// Verifies the validity of an Ethereum block header based on the block number and expected hash.
 ///

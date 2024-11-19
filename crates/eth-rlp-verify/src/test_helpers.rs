@@ -1,4 +1,4 @@
-use crate::block_header::BlockHeader;
+use eth_rlp_types::BlockHeader;
 
 pub fn create_test_block_header_shapella() -> BlockHeader {
     BlockHeader {
