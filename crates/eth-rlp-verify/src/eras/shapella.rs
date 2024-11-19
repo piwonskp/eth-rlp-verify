@@ -218,7 +218,6 @@ impl BlockHeaderTrait for BlockHeaderShapella {
 pub fn verify_hash_shapella(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
     let header = BlockHeaderShapella::from_db_header(db_header);
 
-
     // Compute the block hash
     let computed_block_hash = header.compute_hash();
 

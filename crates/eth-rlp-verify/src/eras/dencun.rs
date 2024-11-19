@@ -246,7 +246,7 @@ pub fn verify_hash_dencun(block_hash: String, db_header: VerifiableBlockHeader) 
     let computed_block_hash = header.compute_hash();
 
     // Check if the computed hash matches the given block hash
-    computed_block_hash == H256::from_str(&block_hash).unwrap() 
+    computed_block_hash == H256::from_str(&block_hash).unwrap()
 }
 
 #[cfg(test)]
