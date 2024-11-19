@@ -49,33 +49,37 @@ type DecoderFn = fn(&[u8]) -> Result<VerifiableBlockHeader, BlockHeaderError>;
 /// # Notes
 ///
 /// - If the block number falls outside the recognized eras, this function will return `None`.
-pub fn determine_era(block_number: u64) -> Option<fn(String, VerifiableBlockHeader) -> bool> {
+pub fn determine_era(
+    block_number: u64,
+) -> Option<fn(String, VerifiableBlockHeader) -> Result<bool, BlockHeaderError>> {
     if (LONDON_START..=LONDON_END).contains(&block_number) {
-        Some(verify_hash_london)
+        Some(|block_hash, db_header| verify_hash_london(block_hash, db_header))
     } else if (PARIS_START..=PARIS_END).contains(&block_number) {
-        Some(verify_hash_paris)
+        Some(|block_hash, db_header| verify_hash_paris(block_hash, db_header))
     } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
-        Some(verify_hash_shapella)
+        Some(|block_hash, db_header| verify_hash_shapella(block_hash, db_header))
     } else if block_number >= DENCUN_START {
-        Some(verify_hash_dencun)
+        Some(|block_hash, db_header| verify_hash_dencun(block_hash, db_header))
     } else if block_number <= GENESIS_END {
-        Some(verify_hash_genesis)
+        Some(|block_hash, db_header| verify_hash_genesis(block_hash, db_header))
     } else {
         None
     }
 }
 
-pub fn determine_era_encoder(block_number: u64) -> Option<fn(VerifiableBlockHeader) -> Vec<u8>> {
+pub fn determine_era_encoder(
+    block_number: u64,
+) -> Option<fn(VerifiableBlockHeader) -> Result<Vec<u8>, BlockHeaderError>> {
     if (LONDON_START..=LONDON_END).contains(&block_number) {
-        Some(|header| london::BlockHeaderLondon::from_db_header(header).rlp_encode())
+        Some(|header| Ok(london::BlockHeaderLondon::from_db_header(header)?.rlp_encode()))
     } else if (PARIS_START..=PARIS_END).contains(&block_number) {
-        Some(|header| paris::BlockHeaderParis::from_db_header(header).rlp_encode())
+        Some(|header| Ok(paris::BlockHeaderParis::from_db_header(header)?.rlp_encode()))
     } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
-        Some(|header| shapella::BlockHeaderShapella::from_db_header(header).rlp_encode())
+        Some(|header| Ok(shapella::BlockHeaderShapella::from_db_header(header)?.rlp_encode()))
     } else if block_number >= DENCUN_START {
-        Some(|header| dencun::BlockHeaderDencun::from_db_header(header).rlp_encode())
+        Some(|header| Ok(dencun::BlockHeaderDencun::from_db_header(header)?.rlp_encode()))
     } else if block_number <= GENESIS_END {
-        Some(|header| genesis::BlockHeaderGenesis::from_db_header(header).rlp_encode())
+        Some(|header| Ok(genesis::BlockHeaderGenesis::from_db_header(header)?.rlp_encode()))
     } else {
         None
     }

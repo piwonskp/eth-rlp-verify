@@ -4,7 +4,7 @@ pub mod constants;
 pub mod eras;
 pub mod test_helpers;
 pub mod traits;
-use eth_rlp_types::BlockHeader as VerifiableBlockHeader;
+use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderError};
 
 pub fn are_blocks_and_chain_valid(block_headers: &[VerifiableBlockHeader]) -> bool {
     for (i, block) in block_headers.iter().enumerate() {
@@ -12,7 +12,10 @@ pub fn are_blocks_and_chain_valid(block_headers: &[VerifiableBlockHeader]) -> bo
         let parent_hash = block.parent_hash.clone().unwrap_or_default();
         let block_number = block.number;
 
-        let is_valid = verify_block(block_number as u64, block.clone(), &block_hash);
+        let is_valid = match verify_block(block_number as u64, block.clone(), &block_hash) {
+            Ok(valid) => valid,
+            Err(_) => false,
+        };
 
         if !is_valid {
             return false;
@@ -50,10 +53,10 @@ pub fn verify_block(
     block_number: u64,
     block_header: VerifiableBlockHeader,
     block_hash: &str,
-) -> bool {
+) -> Result<bool, BlockHeaderError> {
     match eras::determine_era(block_number) {
         Some(verify_fn) => verify_fn(block_hash.to_string(), block_header),
-        None => false, // If the block number is out of the supported range
+        None => Ok(false),
     }
 }
 
@@ -69,7 +72,7 @@ pub fn encode_block_header(
     block_number: u64,
     block_header: VerifiableBlockHeader,
 ) -> Option<Vec<u8>> {
-    eras::determine_era_encoder(block_number).map(|encoder| encoder(block_header))
+    eras::determine_era_encoder(block_number).and_then(|encoder| encoder(block_header).ok())
 }
 
 /// Decodes an RLP-encoded block header based on the block number.

@@ -59,31 +59,30 @@ impl BlockHeaderGenesis {
     /// # Returns
     ///
     /// A `BlockHeaderGenesis` instance containing the parsed and validated block header data.
-    pub fn from_db_header(db_header: VerifiableBlockHeader) -> Self {
+    pub fn from_db_header(db_header: VerifiableBlockHeader) -> Result<Self, BlockHeaderError> {
         let logs_bloom = <Self as BlockHeaderTrait>::hex_to_fixed_array::<256>(
             &db_header.logs_bloom.clone().unwrap_or_default(),
         );
         let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>(&db_header.nonce.clone());
 
-        BlockHeaderGenesis {
-            parent_hash: H256::from_str(&db_header.parent_hash.unwrap_or_default()).unwrap(),
-            ommers_hash: H256::from_str(&db_header.sha3_uncles.unwrap_or_default()).unwrap(),
-            beneficiary: H160::from_str(&db_header.miner.unwrap_or_default()).unwrap(),
-            state_root: H256::from_str(&db_header.state_root.unwrap_or_default()).unwrap(),
-            transactions_root: H256::from_str(&db_header.transaction_root.unwrap_or_default())
-                .unwrap(),
-            receipts_root: H256::from_str(&db_header.receipts_root.unwrap_or_default()).unwrap(),
-            logs_bloom,
-            difficulty: U256::from_str(&db_header.difficulty.unwrap_or("0x0".to_string())).unwrap(),
+        Ok(BlockHeaderGenesis {
+            parent_hash: H256::from_str(&db_header.parent_hash.unwrap_or_default())?,
+            ommers_hash: H256::from_str(&db_header.sha3_uncles.unwrap_or_default())?,
+            beneficiary: H160::from_str(&db_header.miner.unwrap_or_default())?,
+            state_root: H256::from_str(&db_header.state_root.unwrap_or_default())?,
+            transactions_root: H256::from_str(&db_header.transaction_root.unwrap_or_default())?,
+            receipts_root: H256::from_str(&db_header.receipts_root.unwrap_or_default())?,
+            logs_bloom: logs_bloom?,
+            difficulty: U256::from_str(&db_header.difficulty.unwrap_or("0x0".to_string()))?,
             number: U256::from(db_header.number as u64),
             gas_limit: U256::from(db_header.gas_limit as u64),
             gas_used: U256::from(db_header.gas_used as u64),
-            timestamp: U256::from_str(&db_header.timestamp.unwrap_or_default()).unwrap(),
+            timestamp: U256::from_str(&db_header.timestamp.unwrap_or_default())?,
             extra_data: hex::decode(&db_header.extra_data.unwrap_or_default()[2..])
                 .unwrap_or_default(),
-            mix_hash: H256::from_str(&db_header.mix_hash.unwrap_or_default()).unwrap(),
-            nonce,
-        }
+            mix_hash: H256::from_str(&db_header.mix_hash.unwrap_or_default())?,
+            nonce: nonce?,
+        })
     }
 
     pub fn into_verifiable(self) -> VerifiableBlockHeader {
@@ -200,14 +199,18 @@ impl BlockHeaderTrait for BlockHeaderGenesis {
 /// # Returns
 ///
 /// A boolean value indicating whether the computed block hash matches the provided block hash.
-pub fn verify_hash_genesis(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
-    let header = BlockHeaderGenesis::from_db_header(db_header);
+pub fn verify_hash_genesis(
+    block_hash: String,
+    db_header: VerifiableBlockHeader,
+) -> Result<bool, BlockHeaderError> {
+    let header = BlockHeaderGenesis::from_db_header(db_header)?;
 
     // Compute the block hash
     let computed_block_hash = header.compute_hash();
 
     // Check if the computed hash matches the given block hash
-    computed_block_hash == H256::from_str(&block_hash).unwrap()
+    Ok(computed_block_hash
+        == H256::from_str(&block_hash).map_err(|e| BlockHeaderError::RustcHexDecodingError(e))?)
 }
 
 #[cfg(test)]

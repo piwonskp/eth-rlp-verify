@@ -1,7 +1,9 @@
 use ethereum_types::H256;
+use fixed_hash::rustc_hex::FromHexError;
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
 use thiserror::Error;
+use uint::FromHexError as UintFromHexError;
 
 #[derive(Error, Debug)]
 pub enum BlockHeaderError {
@@ -13,13 +15,13 @@ pub enum BlockHeaderError {
     InvalidNonceSize,
     #[error("Rlp decoding error: {0}")]
     RlpDecodingError(#[from] rlp::DecoderError),
+    #[error("Hex decoding error: {0}")]
+    HexDecodingError(#[from] hex::FromHexError),
+    #[error("Rustc hex decoding error: {0}")]
+    RustcHexDecodingError(#[from] FromHexError),
+    #[error("Uint hex decoding error: {0}")]
+    UintHexDecodingError(#[from] UintFromHexError),
 }
-
-// impl From<rlp::DecoderError> for BlockHeaderError {
-//     fn from(error: rlp::DecoderError) -> Self {
-//         BlockHeaderError::RlpDecodingError(error)
-//     }
-// }
 
 /// Represents an Ethereum block header with various properties like block hash, gas limits, and more.
 ///
@@ -143,9 +145,9 @@ pub trait BlockHeaderTrait {
     /// # Panics
     ///
     /// This function will panic if the length of the decoded bytes does not match the expected size `N`.
-    fn hex_to_fixed_array<const N: usize>(hex_str: &str) -> [u8; N] {
+    fn hex_to_fixed_array<const N: usize>(hex_str: &str) -> Result<[u8; N], BlockHeaderError> {
         if hex_str.is_empty() || hex_str == "0x" {
-            return [0u8; N]; // Return an empty array if the input is empty
+            return Ok([0u8; N]); // Return an empty array if the input is empty
         }
 
         // Ensure the hex string starts with "0x"
@@ -159,17 +161,20 @@ pub trait BlockHeaderTrait {
         };
 
         // Decode the hex string
-        let bytes = hex::decode(&padded_content).expect("Failed to decode hex string");
+        let bytes = hex::decode(&padded_content).map_err(BlockHeaderError::HexDecodingError)?;
 
         // Check if the decoded length matches the expected size
         if bytes.len() != N {
-            panic!("Invalid input length: expected {}, got {}", N, bytes.len());
+            return Err(BlockHeaderError::InvalidInputLength {
+                expected: N,
+                got: bytes.len(),
+            });
         }
 
         // Copy bytes into the fixed-size array
         let mut array = [0u8; N];
         array.copy_from_slice(&bytes);
-        array
+        Ok(array)
     }
 }
 
@@ -197,35 +202,35 @@ mod tests {
             0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab,
             0xcd, 0xef,
         ];
-        assert_eq!(result, expected);
+        assert_eq!(result.unwrap(), expected);
     }
 
     #[test]
     fn test_empty_hex_string() {
         let hex_str = "0x"; // No content after "0x"
         let result = BlockHeaderImpl::hex_to_fixed_array::<4>(hex_str);
-        assert_eq!(result, [0u8; 4]);
+        assert_eq!(result.unwrap(), [0u8; 4]);
     }
 
     #[test]
     fn test_empty_string() {
         let hex_str = ""; // Completely empty string
         let result = BlockHeaderImpl::hex_to_fixed_array::<4>(hex_str);
-        assert_eq!(result, [0u8; 4]);
+        assert_eq!(result.unwrap(), [0u8; 4]);
     }
 
     #[test]
     #[should_panic(expected = "Failed to decode hex string")]
     fn test_invalid_hex_string() {
         let hex_str = "0xGGGG"; // Invalid hex characters
-        BlockHeaderImpl::hex_to_fixed_array::<2>(hex_str);
+        BlockHeaderImpl::hex_to_fixed_array::<2>(hex_str).unwrap();
     }
 
     #[test]
     #[should_panic(expected = "Invalid input length: expected 8, got 16")]
     fn test_mismatched_array_length() {
         let hex_str = "0x1234567890abcdef1234567890abcdef";
-        BlockHeaderImpl::hex_to_fixed_array::<8>(hex_str);
+        BlockHeaderImpl::hex_to_fixed_array::<8>(hex_str).unwrap();
     }
 
     // #[test]

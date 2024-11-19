@@ -69,34 +69,31 @@ impl BlockHeaderDencun {
     /// # Returns
     ///
     /// A `BlockHeaderDencun` instance populated with the parsed and validated block header data.
-    pub fn from_db_header(db_header: VerifiableBlockHeader) -> Self {
+    pub fn from_db_header(db_header: VerifiableBlockHeader) -> Result<Self, BlockHeaderError> {
         let logs_bloom = <Self as BlockHeaderTrait>::hex_to_fixed_array::<256>(
             &db_header.logs_bloom.unwrap_or_default(),
         );
         let nonce = <Self as BlockHeaderTrait>::hex_to_fixed_array::<8>("0x0000000000000000");
 
-        BlockHeaderDencun {
-            parent_hash: H256::from_str(&db_header.parent_hash.unwrap_or_default()).unwrap(),
-            ommers_hash: H256::from_str(&db_header.sha3_uncles.unwrap_or_default()).unwrap(),
-            beneficiary: H160::from_str(&db_header.miner.unwrap_or_default()).unwrap(),
-            state_root: H256::from_str(&db_header.state_root.unwrap_or_default()).unwrap(),
-            transactions_root: H256::from_str(&db_header.transaction_root.unwrap_or_default())
-                .unwrap(),
-            receipts_root: H256::from_str(&db_header.receipts_root.unwrap_or_default()).unwrap(),
-            logs_bloom,
-            difficulty: U256::from_str(&db_header.difficulty.unwrap_or_default()).unwrap(),
+        Ok(BlockHeaderDencun {
+            parent_hash: H256::from_str(&db_header.parent_hash.unwrap_or_default())?,
+            ommers_hash: H256::from_str(&db_header.sha3_uncles.unwrap_or_default())?,
+            beneficiary: H160::from_str(&db_header.miner.unwrap_or_default())?,
+            state_root: H256::from_str(&db_header.state_root.unwrap_or_default())?,
+            transactions_root: H256::from_str(&db_header.transaction_root.unwrap_or_default())?,
+            receipts_root: H256::from_str(&db_header.receipts_root.unwrap_or_default())?,
+            logs_bloom: logs_bloom?,
+            difficulty: U256::from_str(&db_header.difficulty.unwrap_or_default())?,
             number: U256::from(db_header.number as u64),
             gas_limit: U256::from(db_header.gas_limit as u64),
             gas_used: U256::from(db_header.gas_used as u64),
-            timestamp: U256::from_str(&db_header.timestamp.unwrap_or_default()).unwrap(),
+            timestamp: U256::from_str(&db_header.timestamp.unwrap_or_default())?,
             extra_data: hex::decode(&db_header.extra_data.unwrap_or_default()[2..])
                 .unwrap_or_default(),
-            mix_hash: H256::from_str(&db_header.mix_hash.unwrap_or_default()).unwrap(),
-            nonce,
-            base_fee_per_gas: U256::from_str(&db_header.base_fee_per_gas.unwrap_or_default())
-                .unwrap(),
-            withdrawals_root: H256::from_str(&db_header.withdrawals_root.unwrap_or_default())
-                .unwrap(),
+            mix_hash: H256::from_str(&db_header.mix_hash.unwrap_or_default())?,
+            nonce: nonce?,
+            base_fee_per_gas: U256::from_str(&db_header.base_fee_per_gas.unwrap_or_default())?,
+            withdrawals_root: H256::from_str(&db_header.withdrawals_root.unwrap_or_default())?,
             parent_beacon_block_root: H256::from_str(
                 &db_header
                     .parent_beacon_block_root
@@ -107,7 +104,7 @@ impl BlockHeaderDencun {
                 .unwrap_or_default(),
             excess_blob_gas: U256::from_str(&db_header.excess_blob_gas.unwrap_or("0x".to_string()))
                 .unwrap_or_default(),
-        }
+        })
     }
 
     /// Converts a `BlockHeaderDencun` into a common `BlockHeader`.
@@ -238,14 +235,18 @@ impl BlockHeaderTrait for BlockHeaderDencun {
 /// # Returns
 ///
 /// A boolean indicating whether the computed block hash matches the provided block hash.
-pub fn verify_hash_dencun(block_hash: String, db_header: VerifiableBlockHeader) -> bool {
+pub fn verify_hash_dencun(
+    block_hash: String,
+    db_header: VerifiableBlockHeader,
+) -> Result<bool, BlockHeaderError> {
     let header = BlockHeaderDencun::from_db_header(db_header);
 
     // Compute the block hash
-    let computed_block_hash = header.compute_hash();
+    let computed_block_hash = header?.compute_hash();
 
     // Check if the computed hash matches the given block hash
-    computed_block_hash == H256::from_str(&block_hash).unwrap()
+    Ok(computed_block_hash
+        == H256::from_str(&block_hash).map_err(|e| BlockHeaderError::RustcHexDecodingError(e))?)
 }
 
 #[cfg(test)]
