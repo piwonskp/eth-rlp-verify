@@ -53,15 +53,15 @@ pub fn determine_era(
     block_number: u64,
 ) -> Option<fn(String, VerifiableBlockHeader) -> Result<bool, BlockHeaderError>> {
     if (LONDON_START..=LONDON_END).contains(&block_number) {
-        Some(|block_hash, db_header| verify_hash_london(block_hash, db_header))
+        Some(verify_hash_london)
     } else if (PARIS_START..=PARIS_END).contains(&block_number) {
-        Some(|block_hash, db_header| verify_hash_paris(block_hash, db_header))
+        Some(verify_hash_paris)
     } else if (SHAPELLA_START..=SHAPELLA_END).contains(&block_number) {
-        Some(|block_hash, db_header| verify_hash_shapella(block_hash, db_header))
+        Some(verify_hash_shapella)
     } else if block_number >= DENCUN_START {
-        Some(|block_hash, db_header| verify_hash_dencun(block_hash, db_header))
+        Some(verify_hash_dencun)
     } else if block_number <= GENESIS_END {
-        Some(|block_hash, db_header| verify_hash_genesis(block_hash, db_header))
+        Some(verify_hash_genesis)
     } else {
         None
     }

@@ -211,7 +211,7 @@ pub fn verify_hash_london(
 
     // Check if the computed hash matches the given block hash
     Ok(computed_block_hash
-        == H256::from_str(&block_hash).map_err(|e| BlockHeaderError::RustcHexDecodingError(e))?)
+        == H256::from_str(&block_hash).map_err(BlockHeaderError::RustcHexDecodingError)?)
 }
 
 #[cfg(test)]

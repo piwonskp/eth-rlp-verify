@@ -12,10 +12,8 @@ pub fn are_blocks_and_chain_valid(block_headers: &[VerifiableBlockHeader]) -> bo
         let parent_hash = block.parent_hash.clone().unwrap_or_default();
         let block_number = block.number;
 
-        let is_valid = match verify_block(block_number as u64, block.clone(), &block_hash) {
-            Ok(valid) => valid,
-            Err(_) => false,
-        };
+        let is_valid =
+            verify_block(block_number as u64, block.clone(), &block_hash).unwrap_or_default();
 
         if !is_valid {
             return false;
