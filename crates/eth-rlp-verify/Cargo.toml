@@ -1,15 +1,15 @@
 [package]
 name = "eth-rlp-verify"
 version = { workspace = true }
-edition = { workspace = true }                                                                                           # Ensure you have a README.md file
+edition = { workspace = true } # Ensure you have a README.md file
 
 [dependencies]
 eth-rlp-types = { path = "../eth-rlp-types" }
 
-rlp = "0.6"
+rlp = { workspace = true }
+
 ethereum-types = "0.15"
 hex = "0.4"
-eyre = "0.6"
 
 
 [lib]

@@ -1,7 +1,25 @@
 use ethereum_types::H256;
-use eyre::Result;
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum BlockHeaderError {
+    #[error("Invalid input length: expected {expected}, got {got}")]
+    InvalidInputLength { expected: usize, got: usize },
+    #[error("Invalid logs bloom size: expected 256")]
+    InvalidLogsBloom,
+    #[error("Invalid nonce size")]
+    InvalidNonceSize,
+    #[error("Rlp decoding error: {0}")]
+    RlpDecodingError(#[from] rlp::DecoderError),
+}
+
+// impl From<rlp::DecoderError> for BlockHeaderError {
+//     fn from(error: rlp::DecoderError) -> Self {
+//         BlockHeaderError::RlpDecodingError(error)
+//     }
+// }
 
 /// Represents an Ethereum block header with various properties like block hash, gas limits, and more.
 ///
@@ -89,7 +107,7 @@ pub trait BlockHeaderTrait {
     ///
     /// # Returns
     /// - A `Result<Self>` which is either the decoded block header or an error if decoding fails.
-    fn rlp_decode(data: &[u8]) -> Result<Self>
+    fn rlp_decode(data: &[u8]) -> Result<Self, BlockHeaderError>
     where
         Self: Sized;
 
@@ -162,7 +180,7 @@ impl BlockHeaderTrait for BlockHeaderImpl {
         vec![]
     }
 
-    fn rlp_decode(_data: &[u8]) -> eyre::Result<Self> {
+    fn rlp_decode(_data: &[u8]) -> Result<Self, BlockHeaderError> {
         unimplemented!()
     }
 }

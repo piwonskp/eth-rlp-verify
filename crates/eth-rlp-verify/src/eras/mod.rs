@@ -8,7 +8,7 @@ use crate::constants::{
     DENCUN_START, GENESIS_END, LONDON_END, LONDON_START, PARIS_END, PARIS_START, SHAPELLA_END,
     SHAPELLA_START,
 };
-use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait};
+use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderError, BlockHeaderTrait};
 
 // Re-export each era's verification function to make them accessible at the module level.
 pub use dencun::verify_hash_dencun;
@@ -17,7 +17,7 @@ pub use london::verify_hash_london;
 pub use paris::verify_hash_paris;
 pub use shapella::verify_hash_shapella;
 
-type DecoderFn = fn(&[u8]) -> Result<VerifiableBlockHeader, eyre::Report>;
+type DecoderFn = fn(&[u8]) -> Result<VerifiableBlockHeader, BlockHeaderError>;
 
 /// Determines the correct Ethereum era based on the block number and returns the corresponding
 /// hash verification function for that era.

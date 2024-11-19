@@ -1,6 +1,5 @@
-use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderTrait}; // Alias for clarity
+use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderError, BlockHeaderTrait}; // Alias for clarity
 use ethereum_types::{H160, H256, U256};
-use eyre::Result;
 use rlp::{Rlp, RlpStream};
 use std::str::FromStr;
 
@@ -170,7 +169,7 @@ impl BlockHeaderTrait for BlockHeaderShapella {
         stream.out().to_vec()
     }
 
-    fn rlp_decode(data: &[u8]) -> Result<Self> {
+    fn rlp_decode(data: &[u8]) -> Result<Self, BlockHeaderError> {
         let rlp = Rlp::new(data);
         Ok(BlockHeaderShapella {
             parent_hash: rlp.val_at(0)?,
@@ -182,7 +181,7 @@ impl BlockHeaderTrait for BlockHeaderShapella {
             logs_bloom: rlp
                 .val_at::<Vec<u8>>(6)?
                 .try_into()
-                .map_err(|_| eyre::eyre!("Invalid logs_bloom size"))?,
+                .map_err(|_| BlockHeaderError::InvalidLogsBloom)?,
             difficulty: rlp.val_at(7)?,
             number: rlp.val_at(8)?,
             gas_limit: rlp.val_at(9)?,
@@ -193,7 +192,7 @@ impl BlockHeaderTrait for BlockHeaderShapella {
             nonce: rlp
                 .val_at::<Vec<u8>>(14)?
                 .try_into()
-                .map_err(|_| eyre::eyre!("Invalid nonce size"))?,
+                .map_err(|_| BlockHeaderError::InvalidNonceSize)?,
             base_fee_per_gas: rlp.val_at(15)?,
             withdrawals_root: rlp.val_at(16)?,
         })
