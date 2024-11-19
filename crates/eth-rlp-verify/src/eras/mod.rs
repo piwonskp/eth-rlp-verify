@@ -18,6 +18,8 @@ pub use paris::verify_hash_paris;
 pub use shapella::verify_hash_shapella;
 
 type DecoderFn = fn(&[u8]) -> Result<VerifiableBlockHeader, BlockHeaderError>;
+type HashVerifierFn = fn(String, VerifiableBlockHeader) -> Result<bool, BlockHeaderError>;
+type EncoderFn = fn(VerifiableBlockHeader) -> Result<Vec<u8>, BlockHeaderError>;
 
 /// Determines the correct Ethereum era based on the block number and returns the corresponding
 /// hash verification function for that era.
@@ -49,9 +51,7 @@ type DecoderFn = fn(&[u8]) -> Result<VerifiableBlockHeader, BlockHeaderError>;
 /// # Notes
 ///
 /// - If the block number falls outside the recognized eras, this function will return `None`.
-pub fn determine_era(
-    block_number: u64,
-) -> Option<fn(String, VerifiableBlockHeader) -> Result<bool, BlockHeaderError>> {
+pub fn determine_era(block_number: u64) -> Option<HashVerifierFn> {
     if (LONDON_START..=LONDON_END).contains(&block_number) {
         Some(verify_hash_london)
     } else if (PARIS_START..=PARIS_END).contains(&block_number) {
@@ -67,9 +67,7 @@ pub fn determine_era(
     }
 }
 
-pub fn determine_era_encoder(
-    block_number: u64,
-) -> Option<fn(VerifiableBlockHeader) -> Result<Vec<u8>, BlockHeaderError>> {
+pub fn determine_era_encoder(block_number: u64) -> Option<EncoderFn> {
     if (LONDON_START..=LONDON_END).contains(&block_number) {
         Some(|header| Ok(london::BlockHeaderLondon::from_db_header(header)?.rlp_encode()))
     } else if (PARIS_START..=PARIS_END).contains(&block_number) {
