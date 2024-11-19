@@ -220,14 +220,18 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Failed to decode hex string")]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: HexDecodingError(InvalidHexCharacter { c: 'G', index: 0 })"
+    )]
     fn test_invalid_hex_string() {
         let hex_str = "0xGGGG"; // Invalid hex characters
         BlockHeaderImpl::hex_to_fixed_array::<2>(hex_str).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "Invalid input length: expected 8, got 16")]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: InvalidInputLength { expected: 8, got: 16 }"
+    )]
     fn test_mismatched_array_length() {
         let hex_str = "0x1234567890abcdef1234567890abcdef";
         BlockHeaderImpl::hex_to_fixed_array::<8>(hex_str).unwrap();
