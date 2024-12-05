@@ -16,6 +16,7 @@ readme = "README.md"
 
 [workspace.dependencies]
 rlp = "0.6"
+primitive-types = { version = "0.13.1", default-features = false }
 
 [workspace.lints.clippy]
 single_match = "warn"
