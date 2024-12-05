@@ -1,5 +1,5 @@
 use eth_rlp_types::{BlockHeader as VerifiableBlockHeader, BlockHeaderError, BlockHeaderTrait}; // Alias for clarity
-use ethereum_types::{H160, H256, U256};
+use primitive_types::{H160, H256, U256};
 use rlp::{Rlp, RlpStream};
 use std::str::FromStr;
 

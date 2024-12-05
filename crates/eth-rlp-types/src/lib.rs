@@ -1,4 +1,4 @@
-use ethereum_types::H256;
+use primitive_types::H256;
 use fixed_hash::rustc_hex::FromHexError;
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
